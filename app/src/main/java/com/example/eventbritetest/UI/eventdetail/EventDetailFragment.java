@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.palette.graphics.Palette;
 
@@ -31,6 +32,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
+    private static final String DOMINANT_COLOR = "dominant_color";
     private TextView mTextViewTitle;
     private TextView mTextViewOrganizer;
     private TextView mTextViewDescription;
@@ -38,6 +40,7 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
     private TextView mTextViewAddress;
     private TextView mTextViewUrl;
     private ImageView mImageViewLogo;
+    private ProgressBar mLoadingProgressBar;
     private FrameLayout mLoadingLayout;
     private int mDominantColor;
 
@@ -47,7 +50,7 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
         EventDetailFragment eventDetailFragment = new EventDetailFragment();
         Bundle bundle = new Bundle();
         bundle.putString(EventbriteApiService.EVENT_ID, idEvent);
-        bundle.putInt("dominant_color", color);
+        bundle.putInt(DOMINANT_COLOR, color);
         eventDetailFragment.setArguments(bundle);
         return eventDetailFragment;
     }
@@ -56,7 +59,9 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDominantColor = getArguments().getInt("dominant_color");
+        mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
+                R.color.colorPrimary : getArguments().getInt(DOMINANT_COLOR);
+
         mViewModel.getLoadingState().observe(this, this::onLoading);
         mViewModel.getTitle().observe(this, this::onTitleFetched);
         mViewModel.getOrganizer().observe(this, this::onOrganizerFetched);
@@ -88,9 +93,10 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
         mTextViewDate = view.findViewById(R.id.event_date);
         mTextViewAddress = view.findViewById(R.id.event_address);
         mImageViewLogo = view.findViewById(R.id.event_image);
+        mLoadingProgressBar = view.findViewById(R.id.loading_progress);
         mLoadingLayout = view.findViewById(R.id.loading_layout);
-        ProgressBar progressBar = view.findViewById(R.id.loading_progress);
-        progressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
+        mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
+        ViewCompat.requestApplyInsets(view);
     }
 
     @Override
