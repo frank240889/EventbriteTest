@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">EventbriteTest</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</string>
+    <string name="show_details">Detalles</string>
+    <string name="title_main_toolbar">%1$d eventos cerca</string>
+    <string name="no_near_events">Ningún evento cercano</string>
+    <string name="retry">Reintentar</string>
+    <string name="swipe_down_to_retry">Desliza hacia abajo para reintentar.</string>
+    <string name="location_error">No se pudo obtener tu ubicación.</string>
+    <string name="settings">Configuración</string>
+    <string name="reloading_events">Recargando eventos cercanos…</string>
+    <string name="seek_range_distance">Rango de búsqueda</string>
+    <string name="invalid_range">El rango debe estar entre 10 y 100.</string>
+    <string name="save">Guardar</string>
+    <string name="error_fetching_event">Ha ocurrido un error.</string>
+    <string name="by_organizer">por\n\n%1$s</string>
+    <string name="wait_please">Espere por favor…</string>
+    <string name="searching_near_events">Buscando eventos…</string>
+    <string name="network_error">Error de red.</string>
+
+    <string-array name="unit_option_keys">
+        <item>Km</item>
+        <item>Mi</item>
+    </string-array>
+</resources>
