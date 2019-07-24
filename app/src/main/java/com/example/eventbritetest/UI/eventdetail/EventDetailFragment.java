@@ -1,6 +1,7 @@
 package com.example.eventbritetest.UI.eventdetail;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,11 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -40,6 +43,8 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     private ProgressBar mLoadingProgressBar;
     private FrameLayout mLoadingLayout;
     private int mDominantColor;
+    private LinearLayout mContainerTitle;
+    private LinearLayout mRootEventDetailContainer;
 
     public EventDetailFragment() {}
 
@@ -52,13 +57,16 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         return eventDetailFragment;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
+                R.color.colorPrimary : getArguments().getInt(DOMINANT_COLOR);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
-                R.color.colorPrimary : getArguments().getInt(DOMINANT_COLOR);
-
         mViewModel.getLoadingState().observe(this, this::onLoading);
         mViewModel.getTitle().observe(this, this::onTitleFetched);
         mViewModel.getOrganizer().observe(this, this::onOrganizerFetched);
@@ -84,17 +92,16 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mTextViewTitle = view.findViewById(R.id.event_title);
-        mTextViewTitle.setTextColor(mDominantColor);
         mTextViewOrganizer = view.findViewById(R.id.event_organizer);
-        mTextViewOrganizer.setTextColor(mDominantColor);
         mTextViewDescription = view.findViewById(R.id.event_description);
         mTextViewDate = view.findViewById(R.id.event_date);
         mTextViewAddress = view.findViewById(R.id.event_address);
         mImageViewLogo = view.findViewById(R.id.event_image);
         mLoadingProgressBar = view.findViewById(R.id.loading_progress);
         mLoadingLayout = view.findViewById(R.id.loading_layout);
+        mRootEventDetailContainer = view.findViewById(R.id.event_detail_root_container);
+        mContainerTitle = view.findViewById(R.id.event_title_container);
         mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
-        ViewCompat.requestApplyInsets(view);
     }
 
     @Override
@@ -152,7 +159,9 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
     private void onSnackbarMessage(SnackBar snackBar) {
         if(snackBar.getAction() == SnackBar.Action.REQUEST_EVENT_DETAIL) {
-            Snackbar snackbar = RoundedSnackbar.make(((View)mLoadingLayout.getParent()), R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
+            Snackbar snackbar = RoundedSnackbar.make(mContainerTitle,
+                    R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
+
             snackbar.setAction(snackBar.getActionResourceId(), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

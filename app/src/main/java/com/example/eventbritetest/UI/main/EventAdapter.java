@@ -23,7 +23,6 @@ import com.example.eventbritetest.utils.GlideApp;
 import java.util.List;
 
 public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
-    private int mDefaultColor;
     public EventAdapter(OnItemClick onItemClick) {
         super(onItemClick);
     }
@@ -31,7 +30,6 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
     @NonNull
     @Override
     public EventHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        mDefaultColor = ContextCompat.getColor(parent.getContext(), R.color.primaryDarkColor);
         View view = LayoutInflater.
                 from(parent.getContext()).
                 inflate(R.layout.item_event_holder_2, parent, false);
@@ -58,7 +56,8 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
                         public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                             if (resource != null) {
                                 Palette p = Palette.from(resource).generate();
-                                int colorPalette = p.getDominantColor(mDefaultColor);
+                                int colorPalette = p.getDominantColor(ContextCompat.getColor(holder.itemView.getContext(),
+                                        R.color.primaryDarkColor));
                                 //((CardView)holder.itemView).setCardBackgroundColor(colorPalette);
                                 //int colorPalette2 = p.getDominantSwatch().getTitleTextColor();
                                 //holder.textViewEventSummary.setTextColor(colorPalette2);

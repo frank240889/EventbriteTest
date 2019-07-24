@@ -103,13 +103,13 @@ public class EventDetailViewModel extends BaseViewModel {
     }
 
     private void processResponse(EventDetail eventDetail) {
-        String title = eventDetail.getName().getText();
+        String title = eventDetail.getName().getText().toUpperCase();
         String urlLogo = eventDetail.getLogo() != null ? eventDetail.getLogo().getUrl() : eventDetail.getUrl() ;
-        String description = eventDetail.getDescription().getText();
-        String startDate = eventDetail.getStart().getLocal();
-        String end = eventDetail.getEnd().getLocal();
-        String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay();
-        String organizer = eventDetail.getOrganizer().getName();
+        String description = eventDetail.getDescription().getText().toUpperCase();
+        String startDate = eventDetail.getStart().getLocal().toUpperCase();
+        String end = eventDetail.getEnd().getLocal().toUpperCase();
+        String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay().toUpperCase();
+        String organizer = eventDetail.getOrganizer().getName().toUpperCase();
         String facebook = eventDetail.getOrganizer().getFacebook();
         String urlDetail = eventDetail.getUrl();
         String by = getApplication().getString(R.string.by_organizer);
@@ -122,6 +122,5 @@ public class EventDetailViewModel extends BaseViewModel {
         mLiveAddress.setValue(address);
         mLiveUrl.setValue(urlDetail);
         mLiveLoading.setValue(false);
-
     }
 }

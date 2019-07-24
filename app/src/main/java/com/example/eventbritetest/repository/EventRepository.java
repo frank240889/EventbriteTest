@@ -79,7 +79,7 @@ public class EventRepository {
 
     public void fetchEvents(Location newLocation) {
         if(mCurrentLocation == null);
-            mCurrentLocation = getCurrentLocation();
+            mCurrentLocation = newLocation;
 
         float userOffset = positionOffset(newLocation, mCurrentLocation);
         boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);
