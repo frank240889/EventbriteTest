@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,11 +32,14 @@ import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
 import com.example.eventbritetest.utils.SnackBar;
+import com.example.eventbritetest.utils.State;
+import com.example.eventbritetest.utils.Status;
 import com.google.android.material.snackbar.Snackbar;
 
 import javax.inject.Inject;
 
 import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
+import static com.example.eventbritetest.utils.SnackBar.Action.REQUEST_FETCH_EVENTS;
 import static com.example.eventbritetest.utils.SnackBar.Action.REQUEST_LOCATION_PERMISSION;
 
 public class MainFragment extends BaseFragment<MainViewModel> implements SettingsFragment.SettingsListener {
@@ -69,7 +73,17 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             eventDetailFragment.
                     show(getChildFragmentManager(), EventDetailFragment.class.getName());
         });
-        mViewModel.getStatus().observe(this, status -> {});
+        mViewModel.getStatus().observe(this, new Observer<Status>() {
+            @Override
+            public void onChanged(Status status) {
+                if(status.status == State.ERROR) {
+                    onSnackbarMessage(SnackBar.create(R.string.network_error,R.string.retry, REQUEST_FETCH_EVENTS));
+                    mActionBar.setTitle(R.string.no_near_events);
+                    mGeneralMessage.setVisibility(View.VISIBLE);
+                    mGeneralMessage.setText(status.throwable.getMessage());
+                }
+            }
+        });
         mViewModel.getLoadingState().observe(this, this::onLoading);
         mViewModel.getEvents().observe(this, uiEvents -> {
             mEventAdapter.onChanged(uiEvents);
