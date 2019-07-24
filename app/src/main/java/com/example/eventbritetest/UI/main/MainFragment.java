@@ -31,6 +31,7 @@ import com.example.eventbritetest.UI.settings.SettingsFragment;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
+import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
 import com.example.eventbritetest.utils.State;
 import com.example.eventbritetest.utils.Status;
@@ -203,7 +204,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
     private void onSnackbarMessage(SnackBar snackBar) {
         if(snackBar.getAction() == NONE) {
-            Snackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_SHORT).show();
+            RoundedSnackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_SHORT).show();
         }
         else {
             createSnackbarWithAction(snackBar);
@@ -212,7 +213,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     }
 
     private void createSnackbarWithAction(SnackBar snackBar) {
-        Snackbar snackbar = Snackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_INDEFINITE);
+        Snackbar snackbar = RoundedSnackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_INDEFINITE);
         View.OnClickListener onClickListener = getOnClickListener(snackBar);
         snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
         snackbar.show();

@@ -21,6 +21,7 @@ import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.GlideApp;
+import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -151,7 +152,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
     private void onSnackbarMessage(SnackBar snackBar) {
         if(snackBar.getAction() == SnackBar.Action.REQUEST_EVENT_DETAIL) {
-            Snackbar snackbar = Snackbar.make(((View)mLoadingLayout.getParent()), R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
+            Snackbar snackbar = RoundedSnackbar.make(((View)mLoadingLayout.getParent()), R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
             snackbar.setAction(snackBar.getActionResourceId(), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

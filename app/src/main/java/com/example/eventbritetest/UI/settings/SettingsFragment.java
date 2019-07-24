@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.interfaces.OnItemClick;
+import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.google.android.material.snackbar.Snackbar;
 
 public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<SettingsViewModel> {
@@ -118,7 +119,7 @@ public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<Setti
     }
 
     private void onMessage(Integer resourceId) {
-        Snackbar.make(mRecyclerViewUnits, resourceId, Snackbar.LENGTH_SHORT).show();
+        RoundedSnackbar.make(mRecyclerViewUnits, resourceId, Snackbar.LENGTH_SHORT).show();
     }
 
     private void onRangeRead(String value) {
