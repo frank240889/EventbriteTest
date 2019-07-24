@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
+import com.example.eventbritetest.network.EventbriteApiService;
+import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,18 +30,20 @@ public class LocationLiveData extends LiveData<Location> implements
     private GoogleApiClient mGoogleApiClient;
     private FusedLocationProviderClient mLocationManager;
     private OnLocationErrorListener mLocationErrorListener;
+    private SharedPref sharedPref;
     private static LocationLiveData INSTANCE;
 
-    private LocationLiveData(Context context) {
+    private LocationLiveData(Context context, SharedPref sharedPref) {
         mLocationManager = LocationServices.getFusedLocationProviderClient(context);
         mGoogleApiClient = new GoogleApiClient.Builder(context, this, this)
                 .addApi(LocationServices.API)
                 .build();
+        this.sharedPref = sharedPref;
     }
 
-    public static LocationLiveData getInstance(Context context) {
+    public static LocationLiveData getInstance(Context context, SharedPref sharedPref) {
         if(INSTANCE == null) {
-            INSTANCE = new LocationLiveData(context);
+            INSTANCE = new LocationLiveData(context, sharedPref);
         }
         return INSTANCE;
     }
@@ -89,7 +93,9 @@ public class LocationLiveData extends LiveData<Location> implements
         mLocationManager.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                setValue(location);
+                sharedPref.putStringSync(EventbriteApiService.LOCATION_LATITUDE, location.getLatitude()+"");
+                sharedPref.putStringSync(EventbriteApiService.LOCATION_LONGITUDE, location.getLongitude()+"");
+                onLocationChanged(location);
             }
         });
     }

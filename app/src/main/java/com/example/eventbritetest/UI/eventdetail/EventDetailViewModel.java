@@ -96,10 +96,10 @@ public class EventDetailViewModel extends AbstractViewModel {
     }
 
     private void processError(Throwable t) {
-        mLiveLoading.setValue(false);
         mSnackbar.setValue(SnackBar.create(R.string.error_fetching_event,
                 R.string.retry,
                 SnackBar.Action.REQUEST_EVENT_DETAIL));
+        mLiveLoading.setValue(false);
     }
 
     private void processResponse(EventDetail eventDetail) {

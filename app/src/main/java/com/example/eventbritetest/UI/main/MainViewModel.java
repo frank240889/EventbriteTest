@@ -21,16 +21,32 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+/**
+ * @author Franco Castillo
+ */
 public class MainViewModel extends AbstractViewModel {
     private LiveData<List<UIEvent>> mLiveEvents;
     private EventRepository mRepository;
     private List<UIEvent> mUiEvents;
 
+    //Inject the required dependencies by constructor
     @Inject
     public MainViewModel(@NonNull Application application,
                          EventRepository eventRepository) {
         super(application);
         mRepository = eventRepository;
+    }
+
+    public LiveData<List<UIEvent>> getEvents() {
+        LiveData<Resource<List<Event>>> resource =
+                mRepository.getEvents();
+        mLiveEvents = Transformations.map(resource, input -> {
+            mLiveLoading.setValue(false);
+            mUiEvents = getUIEvents(input.data);
+            return mUiEvents;
+        });
+
+        return mLiveEvents;
     }
 
     public LiveData<Status> getStatus() {
@@ -46,18 +62,6 @@ public class MainViewModel extends AbstractViewModel {
             }
             return input;
         });
-    }
-
-    public LiveData<List<UIEvent>> getEvents() {
-        LiveData<Resource<List<Event>>> resource =
-                mRepository.getEvents();
-        mLiveEvents = Transformations.map(resource, input -> {
-            mLiveLoading.setValue(false);
-            mUiEvents = getUIEvents(input.data);
-            return mUiEvents;
-        });
-
-        return mLiveEvents;
     }
 
     public UIEvent getEvent(int position) {

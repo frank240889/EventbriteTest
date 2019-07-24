@@ -1,5 +1,8 @@
 package com.example.eventbritetest.utils;
 
+/**
+ * A wrapper to hold the state of a task
+ */
 public class Status {
     public Throwable throwable;
     public State status;

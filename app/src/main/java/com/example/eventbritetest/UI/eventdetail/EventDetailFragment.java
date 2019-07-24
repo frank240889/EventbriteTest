@@ -2,7 +2,6 @@ package com.example.eventbritetest.UI.eventdetail;
 
 import android.app.Dialog;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,21 +13,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.palette.graphics.Palette;
 
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.RoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.GlideApp;
+import com.example.eventbritetest.utils.SnackBar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
 
 public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
@@ -70,6 +66,7 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
         mViewModel.getDate().observe(this, this::onDateFetched);
         mViewModel.getAddress().observe(this, this::onAddressFetched);
         mViewModel.getUrl().observe(this, this::onUrlFetched);
+        mViewModel.getOnSnackbarMessage().observe(this, this::onSnackbarMessage);
     }
 
     @Override
@@ -129,26 +126,10 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
 
     private void onLogoUrlFetched(String value) {
         GlideApp.with(this).
-                asBitmap().
                 load(value).
                 fitCenter().
+                transition(DrawableTransitionOptions.withCrossFade(150)).
                 placeholder(R.drawable.ic_placeholder_material_24dp).
-                listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        if (resource != null) {
-                            Palette p = Palette.from(resource).generate();
-                            // Use generated instance
-                            int colorPalete = p.getDominantColor(ContextCompat.getColor(mImageViewLogo.getContext(), R.color.primaryDarkColor));//p.getMutedColor(ContextCompat.getColor(mImageViewLogo.getContext(), R.color.primaryDarkColor));
-                        }
-                        return false;
-                    }
-                }).
                 into(mImageViewLogo);
     }
 
@@ -166,5 +147,18 @@ public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventD
 
     private void onUrlFetched(String s) {
         //mTextViewUrl.setText(s);
+    }
+
+    private void onSnackbarMessage(SnackBar snackBar) {
+        if(snackBar.getAction() == SnackBar.Action.REQUEST_EVENT_DETAIL) {
+            Snackbar snackbar = Snackbar.make(((View)mLoadingLayout.getParent()), R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction(snackBar.getActionResourceId(), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mViewModel.fetchEvent(EventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
+                }
+            });
+            snackbar.show();
+        }
     }
 }

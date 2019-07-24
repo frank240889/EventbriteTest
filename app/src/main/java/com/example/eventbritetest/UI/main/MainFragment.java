@@ -3,6 +3,7 @@ package com.example.eventbritetest.UI.main;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -105,6 +106,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
         mRecyclerView.setAdapter(mEventAdapter);
         mSwipeRefreshLayout.setOnRefreshListener(MainFragment.this::fetchOrRequestPermissions);
+        fetchOrRequestPermissions();
     }
 
     @Override
@@ -112,7 +114,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         super.onActivityCreated(savedInstanceState);
         ((MainActivity)getActivity()).setSupportActionBar(mToolbar);
         mActionBar = ((MainActivity)getActivity()).getSupportActionBar();
-        fetchOrRequestPermissions();
     }
 
     @Override
@@ -138,19 +139,14 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
     private void fetchOrRequestPermissions() {
         boolean hasLocationPermission = ContextCompat.
-                checkSelfPermission(getActivity(),
+                checkSelfPermission(getContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if(!hasLocationPermission) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Permission.LOCATION.ordinal());
         }
         else {
-            locationLiveData.addLocationErrorListener(new LocationLiveData.OnLocationErrorListener() {
-                @Override
-                public void onErrorLocation(Throwable throwable) {
-
-                }
-            }).observe(this, location -> mViewModel.fetchEvents(location));
+            locationLiveData.observe(this, this::onLocationChanged);
         }
     }
 
@@ -172,17 +168,16 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         }
     }
 
+    private void onLocationChanged(Location location) {
+        mViewModel.fetchEvents(location);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == Permission.LOCATION.ordinal()) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 mGeneralMessage.setVisibility(View.GONE);
-                locationLiveData.addLocationErrorListener(new LocationLiveData.OnLocationErrorListener() {
-                    @Override
-                    public void onErrorLocation(Throwable throwable) {
-
-                    }
-                }).observe(this, location -> mViewModel.fetchEvents(location));
+                locationLiveData.observe(this, this::onLocationChanged);
             }
             else {
                 mGeneralMessage.setVisibility(View.VISIBLE);
@@ -225,10 +220,22 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
     @Override
     public void onSettingsChange() {
-        onSnackbarMessage(SnackBar.create(R.string.reloading_events,
-                null,
-                NONE ));
-        locationLiveData.getLocation();
+        reload();
+    }
 
+    private void reload() {
+        boolean hasLocationPermission = ContextCompat.
+                checkSelfPermission(getContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if(!hasLocationPermission) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Permission.LOCATION.ordinal());
+        }
+        else {
+            onSnackbarMessage(SnackBar.create(R.string.reloading_events,
+                    null,
+                    NONE));
+            locationLiveData.getLocation();
+        }
     }
 }

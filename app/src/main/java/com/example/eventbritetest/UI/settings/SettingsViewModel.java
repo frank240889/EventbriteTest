@@ -62,10 +62,6 @@ public class SettingsViewModel extends AbstractViewModel {
         mNewRange = range;
     }
 
-    public void setUnit(DistanceUnit.Unit unit) {
-        mNewDistanceUnit = unit;
-    }
-
     public void setLocation(Location location) {
         mNewLocation = location;
     }
@@ -76,9 +72,9 @@ public class SettingsViewModel extends AbstractViewModel {
     }
 
     public void checkUnit(int position) {
-        DistanceUnit.Unit unit = mUnits.get(position);
-        unit.setChecked(true);
-        uncheckAllExcept(unit);
+        mNewDistanceUnit = mUnits.get(position);
+        mNewDistanceUnit.setChecked(true);
+        uncheckAllExcept(mNewDistanceUnit);
         mLiveUnits.setValue(mUnits);
     }
 
@@ -131,7 +127,7 @@ public class SettingsViewModel extends AbstractViewModel {
     private boolean saveUnit() {
         boolean change;
 
-        if(!mCurrentUnit.equals(mNewDistanceUnit) && mNewDistanceUnit != null) {
+        if(!mCurrentUnit.equals(mNewDistanceUnit)) {
             mSharedPref.putString(Constants.DISTANCE_UNIT, mNewDistanceUnit.getValue());
             change = true;
         }
@@ -169,7 +165,8 @@ public class SettingsViewModel extends AbstractViewModel {
     }
 
     private int getCurrentRange() {
-        return mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
+        return mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN) < 9 ?
+                10 : mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
     }
 
     private List<DistanceUnit.Unit> buildUnitList() {

@@ -2,6 +2,7 @@ package com.example.eventbritetest.repository;
 
 import android.location.Location;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -19,6 +20,8 @@ import com.example.eventbritetest.utils.EventbriteUtils;
 import com.example.eventbritetest.utils.Resource;
 import com.example.eventbritetest.utils.Status;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -35,14 +38,18 @@ public class EventRepository {
     private EventbriteApiService mApiService;
     // The database where data is stored; this database works  as a trusted storage.
     private EventRoomDatabase mEventRoomDatabase;
-    private int mCurrentRangeRadius;
     // The observable data.
     private LiveData<List<Event>> mLiveResource;
     // The exposed observable to combine different sources.
-    private MediatorLiveData<Resource<List<Event>>> mMediatorLiveResource;
+    private MediatorLiveData<Resource<List<Event>>> mMediatorLiveResource = new MediatorLiveData<>();
     private SharedPref mSharedPref;
     private HashMap<String, String> mParams = new HashMap<>();
-    private MutableLiveData<Status> mLiveStatus;
+    private MutableLiveData<Status> mLiveStatus = new MutableLiveData<>();
+
+    private Location mCurrentLocation;
+    private DistanceUnit mCurrentDistanceUnit;
+    private float mRangeToUpdate;
+    private int mSeekRangeRadius;
 
     @Inject
     public EventRepository(EventbriteApiService apiService,
@@ -52,14 +59,14 @@ public class EventRepository {
         mApiService = apiService;
         mEventRoomDatabase = eventRoomDatabase;
         mLiveResource = eventRoomDatabase.getEventDao().getAllEventsAsync();
-        mLiveStatus = new MutableLiveData<>();
-        mMediatorLiveResource = new MediatorLiveData<>();
-        mLiveStatus.setValue(Status.busy());
+        mSharedPref = sharedPref;
         mMediatorLiveResource.addSource(mLiveResource,
                 events -> mMediatorLiveResource.setValue(Resource.done(events)));
-        mSharedPref = sharedPref;
-        int storeRadiusRange = sharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
-        mCurrentRangeRadius = storeRadiusRange == -1 ? 10: storeRadiusRange;
+
+        mSeekRangeRadius = getCurrentSeekingRangeRadius();
+        mCurrentLocation = getCurrentLocation();
+        mCurrentDistanceUnit = getCurrentDistanceUnit();
+        mRangeToUpdate = getMaximumMetersRangeToUpdate();
     }
 
     public LiveData<Resource<List<Event>>> getEvents() {
@@ -70,79 +77,58 @@ public class EventRepository {
         return mLiveStatus;
     }
 
-    public void fetchEvents(Location location) {
-        String lat = getCurrentLatitude();
-        String lgt = getCurrentLongitude();
+    public void fetchEvents(Location newLocation) {
+        if(mCurrentLocation == null);
+            mCurrentLocation = getCurrentLocation();
 
-        if(lat != null && lgt != null) {
-            double latitude = Double.valueOf(lat);
-            double longitude = Double.valueOf(lgt);
+        float userOffset = positionOffset(newLocation, mCurrentLocation);
+        boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);
+        //Will be activated when setting to search event from user location or custom location is implemented.
+        //boolean isSameLocation = isSameLocation(newLocation);
 
-            Location savedLocation = new Location("saved_location");
-            savedLocation.setLatitude(latitude);
-            savedLocation.setLongitude(longitude);
+        DistanceUnit distanceUnit = getCurrentDistanceUnit();
+        boolean distanceUnitHasChanged = distanceUnitHasChanged(distanceUnit);
 
-            float distanceUserHasMoved = savedLocation.distanceTo(location);
-            int lastRangeRadius = getCurrentRangeRadius();
-            String unit = getCurrentDistanceUnit();
-            String lastRangeRadiusStr = lastRangeRadius + unit.toLowerCase();
+        int seekRange = getCurrentSeekingRangeRadius();
+        boolean seekRangeHasChanged = seekRangeRadiusHasChanged(seekRange);
 
-            String finalLat = lat;
-            String finalLgt = lgt;
+        boolean hasChangedMaximumMetersRangeToUpdate = hasChangedMaximumMetersRangeToUpdate();
 
-            new Async.Count(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
-                @Override
-                public void onResult(Integer result) {
-                    mParams.put(EventbriteApiService.LOCATION_WITHIN, lastRangeRadiusStr);
-                    mParams.put(EventbriteApiService.LOCATION_LATITUDE, finalLat);
-                    mParams.put(EventbriteApiService.LOCATION_LONGITUDE, finalLgt);
-                    if(result == 0 || distanceUserHasMoved > 1000 || lastRangeRadius != mCurrentRangeRadius) {
-                        mCurrentRangeRadius = lastRangeRadius;
-                        fetchFromRemote(mParams);
-                    }
-                    else {
-                        fetchFromLocal();
-                    }
+        new Async.Count(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
+            @Override
+            public void onResult(Integer result) {
+                if(result == 0 || userHasMovedEnoughToUpdate ||
+                        distanceUnitHasChanged || seekRangeHasChanged || hasChangedMaximumMetersRangeToUpdate) {
 
+                    mParams.put(EventbriteApiService.LOCATION_WITHIN, currentSeekRangeRadius());
+                    mParams.put(EventbriteApiService.LOCATION_LATITUDE, String.valueOf(mCurrentLocation.getLatitude()));
+                    mParams.put(EventbriteApiService.LOCATION_LONGITUDE, String.valueOf(mCurrentLocation.getLongitude()));
+                    fetchFromRemote(mParams);
                 }
-            }).executeOnExecutor(Executors.newCachedThreadPool());
-        }
-        else {
-            lat = String.valueOf(location.getLatitude());
-            lgt = String.valueOf(location.getLongitude());
-
-            mSharedPref.putInt(EventbriteApiService.LOCATION_WITHIN, Constants.DEFAULT_DISTANCE);
-            mSharedPref.putString(EventbriteApiService.LOCATION_LATITUDE, lat);
-            mSharedPref.putString(EventbriteApiService.LOCATION_LONGITUDE, lgt);
-
-            mParams.put(EventbriteApiService.LOCATION_WITHIN, mCurrentRangeRadius+"km");
-            mParams.put(EventbriteApiService.LOCATION_LATITUDE, lat);
-            mParams.put(EventbriteApiService.LOCATION_LONGITUDE, lgt);
-            fetchFromRemote(mParams);
-        }
-    }
-
-    private String getCurrentDistanceUnit() {
-        return DistanceUnit.getUnit(mSharedPref.getString(Constants.DISTANCE_UNIT)).toString();
+                else {
+                    fetchFromLocal();
+                }
+            }
+        }).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
     private void fetchFromRemote(HashMap<String, String> params){
-        mLiveStatus.setValue(Status.busy());
         Call<EventbriteEvent> eventbriteCall = mApiService.fetchEvents(params);
+        mLiveStatus.setValue(Status.busy());
         eventbriteCall.enqueue(new Callback<EventbriteEvent>() {
             @Override
-            public void onResponse(Call<EventbriteEvent> call, Response<EventbriteEvent> response) {
+            public void onResponse(@NotNull Call<EventbriteEvent> call, @NotNull Response<EventbriteEvent> response) {
                 List<Event> events;
                 if(response.body() != null && response.body().getEvents() != null) {
                     events = EventbriteUtils.toPersistenceEvents(response.body());
-                    insertEvents(events);
+                    new Async.Create(mEventRoomDatabase.getEventDao()).executeOnExecutor(Executors.newCachedThreadPool(), events);
                 }
                 else {
                     mLiveStatus.setValue(Status.error(new Exception("No data.")));
                 }
             }
             @Override
-            public void onFailure(Call<EventbriteEvent> call, Throwable t) {
+            public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
                 mLiveStatus.setValue(Status.error(t));
             }
         });
@@ -162,19 +148,106 @@ public class EventRepository {
         }).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
-    private void insertEvents(List<Event> input) {
-        new Async.Create(mEventRoomDatabase.getEventDao()).executeOnExecutor(Executors.newCachedThreadPool(), input);
+    private DistanceUnit getCurrentDistanceUnit() {
+        return DistanceUnit.getUnit(mSharedPref.getString(Constants.DISTANCE_UNIT));
     }
 
-    private int getCurrentRangeRadius() {
-        return mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
+    private int getCurrentSeekingRangeRadius() {
+        int storeRadiusRange = mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
+        return storeRadiusRange == -1 ? 10: storeRadiusRange;
     }
 
+    @Nullable
     private String getCurrentLatitude() {
         return mSharedPref.getString(EventbriteApiService.LOCATION_LATITUDE);
     }
 
+    @Nullable
     private String getCurrentLongitude() {
         return mSharedPref.getString(EventbriteApiService.LOCATION_LONGITUDE);
     }
+
+    private float getMaximumMetersRangeToUpdate() {
+        return mSharedPref.getInt(Constants.MAXIMUM_METERS_RANGE_TO_UPDATE) <= 500 ?
+                Constants.DEFAULT_RANGE_IN_METERS_TO_UPDATE : mSharedPref.getInt(Constants.MAXIMUM_METERS_RANGE_TO_UPDATE);
+    }
+
+    private boolean hasChangedMaximumMetersRangeToUpdate() {
+        if(getMaximumMetersRangeToUpdate() != mRangeToUpdate) {
+            mRangeToUpdate = getMaximumMetersRangeToUpdate();
+            return true;
+        }
+
+        return false;
+    }
+
+    @Nullable
+    private Location getCurrentLocation() {
+        String lat = getCurrentLatitude();
+        String lgt = getCurrentLongitude();
+
+        if(lat == null || lgt == null)
+            return null;
+
+        double latitude = Double.valueOf(lat);
+        double longitude = Double.valueOf(lgt);
+
+        Location savedLocation = new Location("saved_location");
+        savedLocation.setLatitude(latitude);
+        savedLocation.setLongitude(longitude);
+        return savedLocation;
+    }
+
+    private String currentSeekRangeRadius() {
+        return mSeekRangeRadius + getCurrentDistanceUnit().toString().toLowerCase();
+    }
+
+    private boolean seekRangeRadiusHasChanged(int lastRangeRadius) {
+        boolean seekRangeRadiusHasChanged = lastRangeRadius != mSeekRangeRadius;
+        if(lastRangeRadius != mSeekRangeRadius)
+            mSeekRangeRadius = lastRangeRadius;
+
+        return seekRangeRadiusHasChanged;
+    }
+
+    /**
+     * Check the distance between 2 points.
+     * @param newLocation The new location.
+     * @param savedLocation The current stored location.
+     * @return The number of meters between those two points.
+     */
+    private float positionOffset(Location newLocation, @Nullable Location savedLocation) {
+        if(savedLocation == null)
+            return Constants.NO_LOCATION_SAVED;
+        return savedLocation.distanceTo(newLocation);
+    }
+
+    private boolean userHasMovedEnough(float offset) {
+        if(offset == Constants.NO_LOCATION_SAVED)
+            return true;
+        return offset > getMaximumMetersRangeToUpdate();
+    }
+
+    private boolean isSameLocation(Location newLocation) {
+        boolean isSameLocation = true;
+        if(mCurrentLocation == null) {
+            mCurrentLocation = newLocation;
+            return false;
+        }
+
+        if(newLocation.getLatitude() == mCurrentLocation.getLatitude() &&
+                newLocation.getLongitude() == mCurrentLocation.getLongitude()) {
+            mCurrentLocation = newLocation;
+        }
+        else isSameLocation = false;
+
+        return isSameLocation;
+    }
+
+    private boolean distanceUnitHasChanged(DistanceUnit newDistanceUnit) {
+        boolean distanceUnitHasChanged = mCurrentDistanceUnit != newDistanceUnit;
+        mCurrentDistanceUnit = newDistanceUnit;
+        return distanceUnitHasChanged;
+    }
+
 }
