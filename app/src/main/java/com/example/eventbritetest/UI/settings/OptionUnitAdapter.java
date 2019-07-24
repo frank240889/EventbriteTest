@@ -9,13 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.palette.graphics.Palette;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractAdapter;
+import com.example.eventbritetest.UI.BaseAdapter;
 import com.example.eventbritetest.interfaces.OnItemClick;
 import com.example.eventbritetest.network.DistanceUnit;
 
 import java.util.List;
 
-public class OptionUnitAdapter extends AbstractAdapter<DistanceUnit.Unit, ItemOptionUnitHolder> {
+public class OptionUnitAdapter extends BaseAdapter<DistanceUnit.Unit, ItemOptionUnitHolder> {
 
     public OptionUnitAdapter(OnItemClick onItemClick) {
         super(onItemClick);

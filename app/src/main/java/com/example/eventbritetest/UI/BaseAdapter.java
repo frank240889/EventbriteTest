@@ -7,11 +7,11 @@ import com.example.eventbritetest.interfaces.OnItemClick;
 
 import java.util.List;
 
-public abstract class AbstractAdapter<D, VH extends AbstractHolder> extends RecyclerView.Adapter<VH> implements Observer<List<D>> {
+public abstract class BaseAdapter<D, VH extends BaseHolder> extends RecyclerView.Adapter<VH> implements Observer<List<D>> {
     protected List<D> mDatasource;
     protected OnItemClick mListener;
-    public AbstractAdapter() {}
-    public AbstractAdapter(OnItemClick listener) {
+    public BaseAdapter() {}
+    public BaseAdapter(OnItemClick listener) {
         mListener = listener;
     }
 

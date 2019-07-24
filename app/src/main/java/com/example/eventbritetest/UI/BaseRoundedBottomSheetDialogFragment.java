@@ -20,7 +20,7 @@ import dagger.android.support.AndroidSupportInjection;
  * @author Franco Castillo
  * A simple bottom sheet dialog fragment with rounded corners.
  */
-public abstract class RoundedBottomSheetDialogFragment<V> extends BottomSheetDialogFragment {
+public abstract class BaseRoundedBottomSheetDialogFragment<V> extends BottomSheetDialogFragment {
     @Inject
     protected AndroidViewModelFactory androidViewModelFactory;
 

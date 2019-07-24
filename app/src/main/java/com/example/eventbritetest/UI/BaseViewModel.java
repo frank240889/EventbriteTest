@@ -10,13 +10,13 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.eventbritetest.utils.SnackBar;
 import com.example.eventbritetest.utils.Status;
 
-public abstract class AbstractViewModel extends AndroidViewModel {
+public abstract class BaseViewModel extends AndroidViewModel {
     protected MutableLiveData<Boolean> mLiveLoading;
     protected MutableLiveData<Integer> mLiveOnMessage = new MutableLiveData<>();
     protected MutableLiveData<SnackBar> mSnackbar = new MutableLiveData<>();
     protected LiveData<Status> mLiveStatus = new MutableLiveData<>();
 
-    public AbstractViewModel(@NonNull Application application) {
+    public BaseViewModel(@NonNull Application application) {
         super(application);
         mLiveLoading = new MutableLiveData<>();
     }

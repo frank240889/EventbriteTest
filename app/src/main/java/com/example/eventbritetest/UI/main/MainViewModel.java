@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractViewModel;
+import com.example.eventbritetest.UI.BaseViewModel;
 import com.example.eventbritetest.model.persistence.Event;
 import com.example.eventbritetest.model.ui.UIEvent;
 import com.example.eventbritetest.repository.EventRepository;
@@ -24,7 +24,7 @@ import javax.inject.Inject;
 /**
  * @author Franco Castillo
  */
-public class MainViewModel extends AbstractViewModel {
+public class MainViewModel extends BaseViewModel {
     private LiveData<List<UIEvent>> mLiveEvents;
     private EventRepository mRepository;
     private List<UIEvent> mUiEvents;

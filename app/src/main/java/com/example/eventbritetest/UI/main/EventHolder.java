@@ -8,10 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractHolder;
+import com.example.eventbritetest.UI.BaseHolder;
 import com.example.eventbritetest.interfaces.OnItemClick;
 
-public class EventHolder extends AbstractHolder {
+public class EventHolder extends BaseHolder {
     Button buttonEventDetails;
     ImageView imageViewEventPreview;
     TextView textViewEventSummary;

@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractViewModel;
+import com.example.eventbritetest.UI.BaseViewModel;
 import com.example.eventbritetest.network.Constants;
 import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
@@ -18,7 +18,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class SettingsViewModel extends AbstractViewModel {
+public class SettingsViewModel extends BaseViewModel {
     private MutableLiveData<String> mLiveCurrentRange = new MutableLiveData<>();
     private MutableLiveData<List<DistanceUnit.Unit>> mLiveUnits = new MutableLiveData<>();
     private MutableLiveData<Boolean> mLiveHasAnyChange = new MutableLiveData<>();

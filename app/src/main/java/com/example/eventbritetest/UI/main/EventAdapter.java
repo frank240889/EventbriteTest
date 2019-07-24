@@ -15,14 +15,14 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractAdapter;
+import com.example.eventbritetest.UI.BaseAdapter;
 import com.example.eventbritetest.interfaces.OnItemClick;
 import com.example.eventbritetest.model.ui.UIEvent;
 import com.example.eventbritetest.utils.GlideApp;
 
 import java.util.List;
 
-public class EventAdapter extends AbstractAdapter<UIEvent,EventHolder> {
+public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
     private int mDefaultColor;
     public EventAdapter(OnItemClick onItemClick) {
         super(onItemClick);

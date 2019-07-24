@@ -7,10 +7,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractHolder;
+import com.example.eventbritetest.UI.BaseHolder;
 import com.example.eventbritetest.interfaces.OnItemClick;
 
-public class ItemOptionUnitHolder extends AbstractHolder {
+public class ItemOptionUnitHolder extends BaseHolder {
     RadioButton radioButtonOption;
     TextView unitTextView;
     public ItemOptionUnitHolder(@NonNull View itemView, OnItemClick onItemClick) {

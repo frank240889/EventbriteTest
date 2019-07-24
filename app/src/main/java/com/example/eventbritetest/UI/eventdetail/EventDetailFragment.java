@@ -18,7 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.RoundedBottomSheetDialogFragment;
+import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.GlideApp;
 import com.example.eventbritetest.utils.SnackBar;
@@ -26,7 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 
-public class EventDetailFragment extends RoundedBottomSheetDialogFragment<EventDetailViewModel> {
+public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
     private static final String DOMINANT_COLOR = "dominant_color";
     private TextView mTextViewTitle;

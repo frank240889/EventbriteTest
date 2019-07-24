@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.AbstractViewModel;
+import com.example.eventbritetest.UI.BaseViewModel;
 import com.example.eventbritetest.model.network.eventdetail.EventDetail;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.SnackBar;
@@ -20,7 +20,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class EventDetailViewModel extends AbstractViewModel {
+public class EventDetailViewModel extends BaseViewModel {
     private MutableLiveData<String> mLiveTitle = new MutableLiveData<>();
     private MutableLiveData<String> mLiveOrganizer = new MutableLiveData<>();
     private MutableLiveData<String> mLiveDescription = new MutableLiveData<>();

@@ -17,11 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventbritetest.R;
-import com.example.eventbritetest.UI.RoundedBottomSheetDialogFragment;
+import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.interfaces.OnItemClick;
 import com.google.android.material.snackbar.Snackbar;
 
-public class SettingsFragment extends RoundedBottomSheetDialogFragment<SettingsViewModel> {
+public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<SettingsViewModel> {
     public interface SettingsListener {
         void onSettingsChange();
     }
