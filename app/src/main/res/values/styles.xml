@@ -27,6 +27,11 @@
         <item name="android:backgroundTint">@color/colorAccent</item>
     </style>
 
+    <style name="Button.Dark" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:textColor">@color/white_overlay</item>
+        <item name="android:backgroundTint">@color/dark</item>
+    </style>
+
     <!-- set the rounded drawable as background to your bottom sheet -->
     <style name="BottomSheet" parent="@style/Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/bg_rounded_bottom_sheet_dialog_fragment</item>

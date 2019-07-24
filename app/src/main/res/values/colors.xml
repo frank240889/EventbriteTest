@@ -9,4 +9,5 @@
 
     <color name="black_overlay">#000000</color>
     <color name="white_overlay">#ffffffff</color>
+    <color name="dark">#323232</color>
 </resources>
