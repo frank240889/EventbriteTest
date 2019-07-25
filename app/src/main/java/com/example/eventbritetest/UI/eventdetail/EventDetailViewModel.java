@@ -109,11 +109,14 @@ public class EventDetailViewModel extends BaseViewModel {
         String startDate = eventDetail.getStart().getLocal().toUpperCase();
         String end = eventDetail.getEnd().getLocal().toUpperCase();
         String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay().toUpperCase();
-        String organizer = eventDetail.getOrganizer().getName().toUpperCase();
+        String organizer = eventDetail.getOrganizer() != null && eventDetail.getOrganizer().getName() != null ?
+                eventDetail.getOrganizer().getName()
+                : null;
+
         String facebook = eventDetail.getOrganizer().getFacebook();
         String urlDetail = eventDetail.getUrl();
         String by = getApplication().getString(R.string.by_organizer);
-        String byOrganizer = String.format(by, organizer);
+        String byOrganizer = organizer == null ? "" : String.format(by, organizer);
         mLiveTitle.setValue(title);
         mLiveOrganizer.setValue(byOrganizer);
         mLiveLogo.setValue(urlLogo);

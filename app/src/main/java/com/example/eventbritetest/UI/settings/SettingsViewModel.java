@@ -36,7 +36,7 @@ public class SettingsViewModel extends BaseViewModel {
     public SettingsViewModel(@NonNull Application application, SharedPref sharedPref) {
         super(application);
         mSharedPref = sharedPref;
-        mCurrentUnit = getCurrentUnit();
+        mNewDistanceUnit = mCurrentUnit = getCurrentUnit();
         mCurrentLocation = getCurrentLocation();
         mCurrentRange = getCurrentRange();
         mUnits = buildUnitList();

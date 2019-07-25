@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.eventbritetest.interfaces.AsyncCallback;
 import com.example.eventbritetest.model.network.search.EventbriteEvent;
@@ -50,6 +51,7 @@ public class EventRepository {
     private DistanceUnit mCurrentDistanceUnit;
     private float mRangeToUpdate;
     private int mSeekRangeRadius;
+    Call<EventbriteEvent> mEventbriteCall;
 
     @Inject
     public EventRepository(EventbriteApiService apiService,
@@ -61,7 +63,12 @@ public class EventRepository {
         mLiveResource = eventRoomDatabase.getEventDao().getAllEventsAsync();
         mSharedPref = sharedPref;
         mMediatorLiveResource.addSource(mLiveResource,
-                events -> mMediatorLiveResource.setValue(Resource.done(events)));
+                new Observer<List<Event>>() {
+                    @Override
+                    public void onChanged(List<Event> events) {
+                        mMediatorLiveResource.setValue(Resource.done(events));
+                    }
+                });
 
         mSeekRangeRadius = getCurrentSeekingRangeRadius();
         mCurrentLocation = getCurrentLocation();
@@ -106,16 +113,19 @@ public class EventRepository {
                     fetchFromRemote(mParams);
                 }
                 else {
-                    fetchFromLocal();
+                    mLiveStatus.setValue(Status.done());
                 }
             }
         }).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
-    private void fetchFromRemote(HashMap<String, String> params){
-        Call<EventbriteEvent> eventbriteCall = mApiService.fetchEvents(params);
+    private void fetchFromRemote(HashMap<String, String> params) {
+        if(mEventbriteCall != null && !mEventbriteCall.isExecuted())
+            mEventbriteCall.cancel();
+
+        mEventbriteCall = mApiService.fetchEvents(params);
         mLiveStatus.setValue(Status.busy());
-        eventbriteCall.enqueue(new Callback<EventbriteEvent>() {
+        mEventbriteCall.enqueue(new Callback<EventbriteEvent>() {
             @Override
             public void onResponse(@NotNull Call<EventbriteEvent> call, @NotNull Response<EventbriteEvent> response) {
                 List<Event> events;
@@ -132,20 +142,6 @@ public class EventRepository {
                 mLiveStatus.setValue(Status.error(t));
             }
         });
-    }
-
-    private void fetchFromLocal() {
-        new Async.Read(mEventRoomDatabase.getEventDao()).
-                setCallback(new AsyncCallback<Void, Void, List<Event>, Void, Void>() {
-                    @Override
-                    public void onStart(Void start) {
-                        mLiveStatus.setValue(Status.busy());
-                    }
-                    @Override
-                    public void onResult(List<Event> result) {
-                        mMediatorLiveResource.setValue(Resource.done(result));
-                    }
-        }).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
     private DistanceUnit getCurrentDistanceUnit() {

@@ -19,4 +19,8 @@ public class Status {
     public static Status busy() {
         return new Status(State.LOADING, null);
     }
+
+    public static Status done() {
+        return new Status(State.DONE, null);
+    }
 }

@@ -15,7 +15,7 @@
     <string name="invalid_range">El rango debe estar entre 10 y 100.</string>
     <string name="save">Guardar</string>
     <string name="error_fetching_event">Ha ocurrido un error.</string>
-    <string name="by_organizer">por\n\n%1$s</string>
+    <string name="by_organizer">por\n%1$s</string>
     <string name="wait_please">Espere por favor…</string>
     <string name="searching_near_events">Buscando eventos…</string>
     <string name="network_error">Error de red.</string>

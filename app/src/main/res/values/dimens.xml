@@ -8,7 +8,7 @@
     <dimen name="top_padding_rounded_bottom_sheet_dialog_fragment">8dp</dimen>
     <dimen name="dimen_width_option_unit_text_view">64dp</dimen>
     <dimen name="dimen_height_event_preview_description_container">64dp</dimen>
-    <dimen name="event_title_text_size">20sp</dimen>
-    <dimen name="event_organizer_text_size">18sp</dimen>
+    <dimen name="event_title_text_size">18sp</dimen>
+    <dimen name="event_organizer_text_size">16sp</dimen>
     <dimen name="event_description_text_size">16sp</dimen>
 </resources>

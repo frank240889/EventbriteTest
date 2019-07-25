@@ -15,8 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.ViewCompat;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
@@ -44,7 +43,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     private FrameLayout mLoadingLayout;
     private int mDominantColor;
     private LinearLayout mContainerTitle;
-    private LinearLayout mRootEventDetailContainer;
+    private CoordinatorLayout mRootEventDetailContainer;
 
     public EventDetailFragment() {}
 
@@ -101,6 +100,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         mLoadingLayout = view.findViewById(R.id.loading_layout);
         mRootEventDetailContainer = view.findViewById(R.id.event_detail_root_container);
         mContainerTitle = view.findViewById(R.id.event_title_container);
+        view.findViewById(R.id.separator).setBackgroundColor(mDominantColor);
         mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
     }
 
@@ -108,11 +108,12 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        dialog.getWindow().setNavigationBarColor(mDominantColor);
         dialog.setOnShowListener(d -> {
+            dialog.getWindow().setNavigationBarColor(mDominantColor);
             FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
             BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetBehavior.setSkipCollapsed(true);
             mViewModel.fetchEvent(EventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
         });
         return dialog;
