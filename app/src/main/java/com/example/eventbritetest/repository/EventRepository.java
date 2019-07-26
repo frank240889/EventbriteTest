@@ -1,6 +1,7 @@
 package com.example.eventbritetest.repository;
 
 import android.location.Location;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -18,6 +19,7 @@ import com.example.eventbritetest.persistence.room.Async;
 import com.example.eventbritetest.persistence.room.EventRoomDatabase;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.EventbriteUtils;
+import com.example.eventbritetest.utils.LocationUtils;
 import com.example.eventbritetest.utils.Resource;
 import com.example.eventbritetest.utils.Status;
 
@@ -88,11 +90,12 @@ public class EventRepository {
         if(mCurrentLocation == null);
             mCurrentLocation = newLocation;
 
-        float userOffset = positionOffset(newLocation, mCurrentLocation);
+        float userOffset = LocationUtils.distanceBetween(newLocation, mCurrentLocation);
         boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);
         //Will be activated when setting to search event from user location or custom location is implemented.
         //boolean isSameLocation = isSameLocation(newLocation);
-
+        Log.d(EventRepository.class.getName(),
+                "user has moved: " + userOffset + "so user has moved enough:" + userHasMovedEnoughToUpdate);
         DistanceUnit distanceUnit = getCurrentDistanceUnit();
         boolean distanceUnitHasChanged = distanceUnitHasChanged(distanceUnit);
 

@@ -39,7 +39,9 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
     @Override
     public void onBindViewHolder(@NonNull EventHolder holder, int position) {
         UIEvent uiEvent = mDatasource.get(position);
-        //holder.textViewEventSummary.setText(uiEvent.getDescription());
+        holder.textViewEventSummary.setText(uiEvent.getName().isEmpty() ?
+                holder.itemView.getContext().getString(R.string.title_not_available) :
+                uiEvent.getName());
 
         if(!uiEvent.getUrlPreview().equals("")) {
             GlideApp.with(holder.imageViewEventPreview.getContext()).

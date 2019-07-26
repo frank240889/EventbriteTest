@@ -3,7 +3,7 @@
     <string name="title_activity_splash">SplashActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</string>
-    <string name="show_details">Detalles</string>
+    <string name="show_details">Ver</string>
     <string name="title_main_toolbar">%1$d eventos cerca</string>
     <string name="no_near_events">Ningún evento cercano</string>
     <string name="retry">Reintentar</string>
@@ -21,6 +21,7 @@
     <string name="network_error">Error de red.</string>
     <string name="unknown_error">Error desconocido.</string>
     <string name="share_event">Compartir</string>
+    <string name="title_not_available">Nombre de evento no disponible.</string>
 
     <string-array name="unit_option_keys">
         <item>Km</item>

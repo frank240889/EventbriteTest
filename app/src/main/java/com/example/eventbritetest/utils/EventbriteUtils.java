@@ -20,8 +20,8 @@ public class EventbriteUtils {
     public static Event toPersistenceEvent(com.example.eventbritetest.model.network.search.Event event) {
         Event e = new Event();
         e.setId(event.getId());
-        e.setDescription(event.getSummary() == null || event.getSummary().isEmpty() ? "SIN DESCRIPCIÓN":event.getSummary().toUpperCase().trim());
-        e.setName(event.getName().getText());
+        e.setDescription(event.getSummary() == null || event.getSummary().isEmpty() ? "":event.getSummary().toUpperCase().trim());
+        e.setName(event.getName() != null && event.getName().getText() != null ? event.getName().getText() : "");
         e.setStartDate(event.getStart().getLocal());
         e.setUrlPreview(event.getLogo() != null ? event.getLogo().getUrl() == null ? "" : event.getLogo().getUrl():"");
         return e;

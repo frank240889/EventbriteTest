@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,12 +72,8 @@ public class LocationLiveData extends LiveData<Location> implements
     public void onConnected(@Nullable Bundle bundle) {
         getLocation();
         if(hasActiveObservers() &&  mGoogleApiClient.isConnected()) {
-            LocationRequest locationRequest = LocationRequest.create();
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            //locationRequest.setFastestInterval(600);
-            //locationRequest.setInterval(5000);
-            //locationRequest.setMaxWaitTime(10000);
-            locationRequest.setSmallestDisplacement(1000);
+            LocationRequest locationRequest = getLocationRequest();
+
             mLocationCallback = getLocationCallback();
             mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
         }
@@ -109,6 +106,7 @@ public class LocationLiveData extends LiveData<Location> implements
             sharedPref.putStringSync(EventbriteApiService.LOCATION_LATITUDE, location.getLatitude()+"");
             sharedPref.putStringSync(EventbriteApiService.LOCATION_LONGITUDE, location.getLongitude()+"");
         }
+        Log.d("GPS", "recibiendo locación");
         super.setValue(location);
     }
 
@@ -125,5 +123,15 @@ public class LocationLiveData extends LiveData<Location> implements
                 boolean isAvailable = locationAvailability.isLocationAvailable();
             }
         };
+    }
+
+    private LocationRequest getLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        /*locationRequest.setFastestInterval(60000);
+        locationRequest.setInterval(60000);
+        locationRequest.setMaxWaitTime(120000);*/
+        locationRequest.setSmallestDisplacement(30);
+        return locationRequest;
     }
 }
