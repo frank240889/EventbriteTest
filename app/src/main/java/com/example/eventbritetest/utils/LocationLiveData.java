@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,27 +15,30 @@ import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationLiveData extends LiveData<Location> implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        GoogleApiClient.OnConnectionFailedListener{
 
     public interface OnLocationErrorListener {
         void onErrorLocation(Throwable throwable);
     }
 
     private GoogleApiClient mGoogleApiClient;
-    private FusedLocationProviderClient mLocationManager;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
     private OnLocationErrorListener mLocationErrorListener;
     private SharedPref sharedPref;
+    private LocationCallback mLocationCallback;
     private static LocationLiveData INSTANCE;
 
     private LocationLiveData(Context context, SharedPref sharedPref) {
-        mLocationManager = LocationServices.getFusedLocationProviderClient(context);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
         mGoogleApiClient = new GoogleApiClient.Builder(context, this, this)
                 .addApi(LocationServices.API)
                 .build();
@@ -48,12 +52,6 @@ public class LocationLiveData extends LiveData<Location> implements
         return INSTANCE;
     }
 
-    public LocationLiveData addLocationErrorListener(OnLocationErrorListener locationChangeListener) {
-        mLocationErrorListener = locationChangeListener;
-        return this;
-
-    }
-
     @SuppressLint("MissingPermission")
     @Override
     protected void onActive() {
@@ -64,12 +62,24 @@ public class LocationLiveData extends LiveData<Location> implements
     protected void onInactive() {
         if(mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
+
+        mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         getLocation();
+        if(hasActiveObservers() &&  mGoogleApiClient.isConnected()) {
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            //locationRequest.setFastestInterval(600);
+            //locationRequest.setInterval(5000);
+            //locationRequest.setMaxWaitTime(10000);
+            locationRequest.setSmallestDisplacement(1000);
+            mLocationCallback = getLocationCallback();
+            mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
+        }
     }
 
     @Override
@@ -83,21 +93,37 @@ public class LocationLiveData extends LiveData<Location> implements
         mLocationErrorListener.onErrorLocation(new Exception(connectionResult.getErrorMessage()));
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        setValue(location);
-    }
-
     @SuppressLint("MissingPermission")
     public void getLocation() {
-        mLocationManager.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        mFusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                sharedPref.putStringSync(EventbriteApiService.LOCATION_LATITUDE, location.getLatitude()+"");
-                sharedPref.putStringSync(EventbriteApiService.LOCATION_LONGITUDE, location.getLongitude()+"");
-                onLocationChanged(location);
+                setValue(location);
             }
         });
     }
 
+    @Override
+    protected void setValue(Location location) {
+        if(location != null) {
+            sharedPref.putStringSync(EventbriteApiService.LOCATION_LATITUDE, location.getLatitude()+"");
+            sharedPref.putStringSync(EventbriteApiService.LOCATION_LONGITUDE, location.getLongitude()+"");
+        }
+        super.setValue(location);
+    }
+
+    private LocationCallback getLocationCallback() {
+        return new LocationCallback(){
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                Location location = locationResult.getLastLocation();
+                setValue(location);
+            }
+
+            @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                boolean isAvailable = locationAvailability.isLocationAvailable();
+            }
+        };
+    }
 }

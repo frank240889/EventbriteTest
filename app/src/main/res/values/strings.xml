@@ -19,6 +19,8 @@
     <string name="wait_please">Espere por favor…</string>
     <string name="searching_near_events">Buscando eventos…</string>
     <string name="network_error">Error de red.</string>
+    <string name="unknown_error">Error desconocido.</string>
+    <string name="share_event">Compartir</string>
 
     <string-array name="unit_option_keys">
         <item>Km</item>

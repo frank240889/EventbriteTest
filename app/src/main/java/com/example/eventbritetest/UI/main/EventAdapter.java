@@ -39,7 +39,7 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
     @Override
     public void onBindViewHolder(@NonNull EventHolder holder, int position) {
         UIEvent uiEvent = mDatasource.get(position);
-        holder.textViewEventSummary.setText(uiEvent.getDescription());
+        //holder.textViewEventSummary.setText(uiEvent.getDescription());
 
         if(!uiEvent.getUrlPreview().equals("")) {
             GlideApp.with(holder.imageViewEventPreview.getContext()).
@@ -58,9 +58,6 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
                                 Palette p = Palette.from(resource).generate();
                                 int colorPalette = p.getDominantColor(ContextCompat.getColor(holder.itemView.getContext(),
                                         R.color.primaryDarkColor));
-                                //((CardView)holder.itemView).setCardBackgroundColor(colorPalette);
-                                //int colorPalette2 = p.getDominantSwatch().getTitleTextColor();
-                                //holder.textViewEventSummary.setTextColor(colorPalette2);
                                 uiEvent.setDominantColor(colorPalette);
                             }
                             return false;
