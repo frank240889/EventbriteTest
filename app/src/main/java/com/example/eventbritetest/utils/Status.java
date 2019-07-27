@@ -23,4 +23,8 @@ public class Status {
     public static Status done() {
         return new Status(State.DONE, null);
     }
+
+    public static Status done(String message) {
+        return new Status(State.DONE, new Exception(message));
+    }
 }

@@ -20,6 +20,8 @@ public interface EventbriteApiService {
     String EVENT_ID = "event_id";
     double DEFAULT_LATITUDE = 19.432608;
     double DEFAULT_LONGITUDE = -99.133209;
+    String CURRENT_PAGE = "page";
+    String TOTAL_PAGES = "total_pages";
 
 
     @GET("v3/events/search/")

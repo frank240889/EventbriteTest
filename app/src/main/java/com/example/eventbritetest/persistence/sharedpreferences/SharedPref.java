@@ -31,4 +31,8 @@ public class SharedPref {
     public void putStringSync(String key, String value) {
         mSharedPreferences.edit().putString(key, value).commit();
     }
+
+    public void putIntSync(String key, int value) {
+        mSharedPreferences.edit().putInt(key, value).commit();
+    }
 }

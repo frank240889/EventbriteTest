@@ -68,8 +68,8 @@ public class MainViewModel extends BaseViewModel {
         return mUiEvents.get(position);
     }
 
-    public void fetchEvents(Location location) {
-        mRepository.fetchEvents(location);
+    public void fetchEvents(Location location, boolean loadMore) {
+        mRepository.fetchEvents(location, loadMore);
     }
 
     private List<UIEvent> getUIEvents(List<Event> events) {

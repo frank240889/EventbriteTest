@@ -62,6 +62,62 @@ public class Async {
         }
     }
 
+    public static class Recreate extends AsyncTaskEventbrite<List<Event>, Void, Void>{
+        private WeakReference<AsyncCallback<Void, Void, Void, Void, Void>> mAsyncCallback;
+        private EventDao mEventDao;
+
+        public Recreate() {}
+        public Recreate(EventDao eventDao) {
+            mEventDao = eventDao;
+        }
+
+        public AsyncTaskEventbrite<List<Event>,Void, Void> setCallback(AsyncCallback<Void, Void, Void, Void, Void> callback) {
+            mAsyncCallback = new WeakReference<>(callback);
+            return this;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            if(getCallback() != null)
+                getCallback().onStart(null);
+        }
+
+        @SafeVarargs
+        @Override
+        protected final Void doInBackground(List<Event>... events) {
+            List<Event> eventList = events[0];
+            mEventDao.deleteAndInsert(eventList);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void voids) {
+            if(getCallback() != null)
+                getCallback().onResult(null);
+        }
+
+        @Override
+        protected void onCancelled(Void voids) {
+            super.onCancelled(voids);
+            if(getCallback() != null)
+                getCallback().onCancelled(null);
+
+        }
+
+        @Override
+        protected AsyncCallback<Void, Void, Void, Void, Void> getCallback() {
+            if(mAsyncCallback != null && mAsyncCallback.get() != null)
+                return mAsyncCallback.get();
+            return null;
+        }
+
+        @Override
+        protected void clear() {
+            if(getCallback() != null)
+                mAsyncCallback.clear();
+            mAsyncCallback = null;
+        }
+    }
 
     public static class Create extends AsyncTaskEventbrite<List<Event>, Void, Void>{
         private WeakReference<AsyncCallback<Void, Void, Void, Void, Void>> mAsyncCallback;
@@ -83,11 +139,9 @@ public class Async {
                 getCallback().onStart(null);
         }
 
-        @SafeVarargs
         @Override
         protected final Void doInBackground(List<Event>... events) {
             List<Event> eventList = events[0];
-            mEventDao.deleteAll();
             mEventDao.insertEvents(eventList);
             return null;
         }

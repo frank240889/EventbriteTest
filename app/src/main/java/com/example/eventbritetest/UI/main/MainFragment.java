@@ -132,6 +132,23 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                 ContextCompat.getColor(getActivity(), R.color.primaryDarkColor)
         );
 
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int totalItemCount = recyclerView.getLayoutManager().getItemCount();
+                int lastVisibleItem = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+                if (totalItemCount <= (lastVisibleItem + 1)) {
+                    mViewModel.fetchEvents(null, true);
+                }
+            }
+        });
+
         mSwipeRefreshLayout.setOnRefreshListener(MainFragment.this::fetchOrRequestPermissions);
         fetchOrRequestPermissions();
     }
@@ -196,7 +213,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     }
 
     private void onLocationChanged(Location location) {
-        mViewModel.fetchEvents(location);
+        mViewModel.fetchEvents(location, false);
     }
 
     @Override

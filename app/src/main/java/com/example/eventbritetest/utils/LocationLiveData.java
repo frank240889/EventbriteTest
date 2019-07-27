@@ -64,7 +64,8 @@ public class LocationLiveData extends LiveData<Location> implements
         if(mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
 
-        mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        if(mLocationCallback != null)
+            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
     }
 
     @SuppressLint("MissingPermission")

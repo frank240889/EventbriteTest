@@ -3,6 +3,7 @@ package com.example.eventbritetest.UI.eventdetail;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +16,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
+import com.example.eventbritetest.utils.AndroidUtils;
+import com.example.eventbritetest.utils.ColorUtils;
 import com.example.eventbritetest.utils.GlideApp;
 import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
@@ -42,8 +47,11 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     private ProgressBar mLoadingProgressBar;
     private FrameLayout mLoadingLayout;
     private int mDominantColor;
+    private int mInvertedDominantColor;
     private LinearLayout mContainerTitle;
+    private CardView mCardEventDetail;
     private CoordinatorLayout mRootEventDetailContainer;
+    private NestedScrollView mNestedScrollView;
 
     public EventDetailFragment() {}
 
@@ -61,6 +69,13 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         super.onAttach(context);
         mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
                 R.color.colorPrimary : getArguments().getInt(DOMINANT_COLOR);
+
+        if(mDominantColor == R.color.colorPrimary) {
+            mInvertedDominantColor = R.color.white_overlay;
+        }
+        else {
+            mInvertedDominantColor = ColorUtils.invertColor(mDominantColor);
+        }
     }
 
     @Override
@@ -79,7 +94,8 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
     @Override
     protected void onLoading(Boolean isLoading) {
-        mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        //mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        mLoadingProgressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
     @Nullable
@@ -91,17 +107,26 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mTextViewTitle = view.findViewById(R.id.event_title);
+        mTextViewTitle.setTextColor(mInvertedDominantColor);
         mTextViewOrganizer = view.findViewById(R.id.event_organizer);
+        mTextViewOrganizer.setTextColor(mInvertedDominantColor);
         mTextViewDescription = view.findViewById(R.id.event_description);
+        mTextViewDescription.setTextColor(mInvertedDominantColor);
         mTextViewDate = view.findViewById(R.id.event_date);
+        mTextViewDate.setTextColor(mInvertedDominantColor);
+        mTextViewDate.getCompoundDrawablesRelative()[0].setColorFilter(mInvertedDominantColor, PorterDuff.Mode.SRC_ATOP);
         mTextViewAddress = view.findViewById(R.id.event_address);
+        mTextViewAddress.setTextColor(mInvertedDominantColor);
+        mTextViewAddress.getCompoundDrawablesRelative()[0].setColorFilter(mInvertedDominantColor, PorterDuff.Mode.SRC_IN);
         mImageViewLogo = view.findViewById(R.id.event_image);
         mLoadingProgressBar = view.findViewById(R.id.loading_progress);
-        mLoadingLayout = view.findViewById(R.id.loading_layout);
+        //mLoadingLayout = view.findViewById(R.id.loading_layout);
         mRootEventDetailContainer = view.findViewById(R.id.event_detail_root_container);
         mContainerTitle = view.findViewById(R.id.event_title_container);
-        view.findViewById(R.id.separator).setBackgroundColor(mDominantColor);
-        mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
+        mNestedScrollView = view.findViewById(R.id.scrollable_container);
+        mNestedScrollView.setBackgroundColor(mDominantColor);
+        view.findViewById(R.id.event_detail_separator).setBackgroundColor(mInvertedDominantColor);
+        mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mInvertedDominantColor));
     }
 
     @Override
@@ -109,15 +134,15 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
         dialog.setOnShowListener(d -> {
-            dialog.getWindow().setNavigationBarColor(mDominantColor);
             FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            bottomSheet.setBackground(AndroidUtils.getRoundedDrawable(mDominantColor, getActivity()));
             BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             bottomSheetBehavior.setSkipCollapsed(true);
+            dialog.getWindow().setNavigationBarColor(mDominantColor);
             mViewModel.fetchEvent(EventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
         });
         return dialog;
-
     }
 
     @Override
@@ -144,14 +169,17 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
     private void onDescriptionFetched(String s) {
         mTextViewDescription.setText(s);
+        mTextViewDescription.setVisibility(View.VISIBLE);
     }
 
     private void onDateFetched(String s) {
         mTextViewDate.setText(s);
+        mTextViewDate.setVisibility(View.VISIBLE);
     }
 
     private void onAddressFetched(String s) {
         mTextViewAddress.setText(s);
+        mTextViewAddress.setVisibility(View.VISIBLE);
     }
 
     private void onUrlFetched(String s) {

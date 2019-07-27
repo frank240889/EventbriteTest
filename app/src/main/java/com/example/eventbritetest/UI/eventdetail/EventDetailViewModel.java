@@ -104,11 +104,19 @@ public class EventDetailViewModel extends BaseViewModel {
 
     private void processResponse(EventDetail eventDetail) {
         String title = eventDetail.getName().getText().toUpperCase();
-        String urlLogo = eventDetail.getLogo() != null ? eventDetail.getLogo().getUrl() : eventDetail.getUrl() ;
-        String description = eventDetail.getDescription().getText().toUpperCase();
+
+        String urlLogo = eventDetail.getLogo() != null && eventDetail.getLogo().getUrl() != null ?
+                eventDetail.getLogo().getUrl() : "";
+
+        String description = eventDetail.getDescription() != null && eventDetail.getDescription().getText() != null ?
+                eventDetail.getDescription().getText().toUpperCase() : getApplication().getString(R.string.description_not_available);
+
         String startDate = eventDetail.getStart().getLocal().toUpperCase();
+
         String end = eventDetail.getEnd().getLocal().toUpperCase();
+
         String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay().toUpperCase();
+
         String organizer = eventDetail.getOrganizer() != null && eventDetail.getOrganizer().getName() != null ?
                 eventDetail.getOrganizer().getName()
                 : null;
@@ -119,11 +127,11 @@ public class EventDetailViewModel extends BaseViewModel {
         String byOrganizer = organizer == null ? "" : String.format(by, organizer);
         mLiveTitle.setValue(title);
         mLiveOrganizer.setValue(byOrganizer);
-        mLiveLogo.setValue(urlLogo);
-        mLiveDescription.setValue(description);
         mLiveDate.setValue(startDate + " - " + end);
         mLiveAddress.setValue(address);
+        mLiveDescription.setValue(description);
         mLiveUrl.setValue(urlDetail);
         mLiveLoading.setValue(false);
+        mLiveLogo.setValue(urlLogo);
     }
 }

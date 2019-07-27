@@ -23,6 +23,6 @@ public abstract class BaseHolder extends RecyclerView.ViewHolder implements View
     @Override
     public void onClick(View v) {
         if(mOnItemClick != null && mOnItemClick.get() != null)
-            mOnItemClick.get().onItemClick(getAdapterPosition(), v);
+            mOnItemClick.get().onItemClick(getLayoutPosition(), v);
     }
 }

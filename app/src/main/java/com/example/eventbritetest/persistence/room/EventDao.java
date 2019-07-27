@@ -6,29 +6,36 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import com.example.eventbritetest.model.persistence.Event;
 
 import java.util.List;
 
 @Dao
-public interface EventDao {
+public abstract class EventDao {
     @Query("SELECT * FROM event")
-    LiveData<List<Event>> getAllEventsAsync();
+    public abstract LiveData<List<Event>> getAllEventsAsync();
 
     @Query("SELECT * FROM event")
-    List<Event> getAllEvents();
+    public abstract List<Event> getAllEvents();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertEvents(List<Event> events);
+    public abstract void insertEvents(List<Event> events);
 
     @Delete
-    void deleteAll(List<Event> events);
+    public abstract void deleteAll(List<Event> events);
 
     @Query("DELETE FROM event")
-    void deleteAll();
+    public abstract void deleteAll();
 
     @Query("SELECT COUNT(*) FROM event")
-    Integer getCount();
+    public abstract Integer getCount();
+
+    @Transaction
+    public void deleteAndInsert(List<Event> events){
+        deleteAll();
+        insertEvents(events);
+    }
 
 }

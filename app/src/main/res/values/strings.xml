@@ -22,6 +22,7 @@
     <string name="unknown_error">Error desconocido.</string>
     <string name="share_event">Compartir</string>
     <string name="title_not_available">Nombre de evento no disponible.</string>
+    <string name="description_not_available">Descripción no disponible.</string>
 
     <string-array name="unit_option_keys">
         <item>Km</item>
