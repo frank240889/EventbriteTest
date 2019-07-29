@@ -1,10 +1,15 @@
 package com.example.eventbritetest.persistence.sharedpreferences;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.eventbritetest.BuildConfig;
 
+/**
+ * The shared preferences for the app.
+ * Used and managed by dagger.
+ */
 public class SharedPref {
     private SharedPreferences mSharedPreferences;
 
@@ -28,10 +33,12 @@ public class SharedPref {
         mSharedPreferences.edit().putString(key, value).apply();
     }
 
+    @SuppressLint("ApplySharedPref")
     public void putStringSync(String key, String value) {
         mSharedPreferences.edit().putString(key, value).commit();
     }
 
+    @SuppressLint("ApplySharedPref")
     public void putIntSync(String key, int value) {
         mSharedPreferences.edit().putInt(key, value).commit();
     }

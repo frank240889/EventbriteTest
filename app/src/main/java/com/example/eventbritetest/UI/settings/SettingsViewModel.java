@@ -44,17 +44,17 @@ public class SettingsViewModel extends BaseViewModel {
         mLiveCurrentRange.setValue(mCurrentRange+"");
     }
 
-    public LiveData<String> getLiveCurrentRange() {
+    public LiveData<String> observeCurrentRange() {
         return mLiveCurrentRange;
     }
 
 
 
-    public LiveData<List<DistanceUnit.Unit>> getUnitList() {
+    public LiveData<List<DistanceUnit.Unit>> observeUnitList() {
         return mLiveUnits;
     }
 
-    public LiveData<Boolean> hasChangeAny() {
+    public LiveData<Boolean> observeSettingChanges() {
         return mLiveHasAnyChange;
     }
 

@@ -93,8 +93,8 @@ public class EventRepository {
     }
 
     public void fetchEvents(Location newLocation, boolean loadMore) {
-        //if(mCurrentLocation == null);
-        //    mCurrentLocation = newLocation;
+        if(mCurrentLocation == null);
+            mCurrentLocation = newLocation;
 
         //float userOffset = LocationUtils.distanceBetween(newLocation, mCurrentLocation);
         //boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);

@@ -81,15 +81,15 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel.getLoadingState().observe(this, this::onLoading);
-        mViewModel.getTitle().observe(this, this::onTitleFetched);
-        mViewModel.getOrganizer().observe(this, this::onOrganizerFetched);
-        mViewModel.getLogo().observe(this, this::onLogoUrlFetched);
-        mViewModel.getDescription().observe(this, this::onDescriptionFetched);
-        mViewModel.getDate().observe(this, this::onDateFetched);
-        mViewModel.getAddress().observe(this, this::onAddressFetched);
-        mViewModel.getUrl().observe(this, this::onUrlFetched);
-        mViewModel.getOnSnackbarMessage().observe(this, this::onSnackbarMessage);
+        mViewModel.observeLoadingState().observe(this, this::onLoading);
+        mViewModel.observeTitle().observe(this, this::onTitleFetched);
+        mViewModel.observeOrganizer().observe(this, this::onOrganizerFetched);
+        mViewModel.observeLogo().observe(this, this::onLogoUrlFetched);
+        mViewModel.observeDescription().observe(this, this::onDescriptionFetched);
+        mViewModel.observeDate().observe(this, this::onDateFetched);
+        mViewModel.observeAddress().observe(this, this::onAddressFetched);
+        mViewModel.observeUrl().observe(this, this::onUrlFetched);
+        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
     }
 
     @Override

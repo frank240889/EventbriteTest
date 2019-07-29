@@ -51,6 +51,6 @@
             app:layout_constraintTop_toBottomOf="@+id/main_toolbar"
             android:scrollbars="vertical"
             tools:itemCount="5"
-            tools:listitem="@layout/item_event_holder" />
+            tools:listitem="@layout/item_event_holder_2" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

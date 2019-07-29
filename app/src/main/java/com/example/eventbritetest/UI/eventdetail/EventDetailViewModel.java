@@ -38,31 +38,31 @@ public class EventDetailViewModel extends BaseViewModel {
         mEventbriteApiService = eventbriteApiService;
     }
 
-    public LiveData<String> getTitle() {
+    public LiveData<String> observeTitle() {
         return mLiveTitle;
     }
 
-    public LiveData<String> getOrganizer() {
+    public LiveData<String> observeOrganizer() {
         return mLiveOrganizer;
     }
 
-    public LiveData<String> getDescription() {
+    public LiveData<String> observeDescription() {
         return mLiveDescription;
     }
 
-    public LiveData<String> getDate() {
+    public LiveData<String> observeDate() {
         return mLiveDate;
     }
 
-    public LiveData<String> getAddress() {
+    public LiveData<String> observeAddress() {
         return mLiveAddress;
     }
 
-    public LiveData<String> getLogo() {
+    public LiveData<String> observeLogo() {
         return mLiveLogo;
     }
 
-    public LiveData<String> getUrl() {
+    public LiveData<String> observeUrl() {
         return mLiveUrl;
     }
 

@@ -15,6 +15,10 @@ import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 
+/**
+ * @author Franco Castillo
+ * The activity that holds all the fragments for the app
+ */
 public class MainActivity extends AppCompatActivity implements HasSupportFragmentInjector {
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;

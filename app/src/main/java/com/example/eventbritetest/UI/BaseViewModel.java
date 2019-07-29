@@ -21,18 +21,18 @@ public abstract class BaseViewModel extends AndroidViewModel {
         mLiveLoading = new MutableLiveData<>();
     }
 
-    public LiveData<Boolean> getLoadingState() {
+    public LiveData<Boolean> observeLoadingState() {
         return mLiveLoading;
     }
 
-    public LiveData<Integer> getMessage() {
+    public LiveData<Integer> observeNotificationMessage() {
         return mLiveOnMessage;
     }
 
-    public LiveData<SnackBar> getOnSnackbarMessage() {
+    public LiveData<SnackBar> observeSnackbarMessage() {
         return mSnackbar;
     }
-    public LiveData<Status> getStatus() {
+    public LiveData<Status> observeStatus() {
         return mLiveStatus;
     }
 }

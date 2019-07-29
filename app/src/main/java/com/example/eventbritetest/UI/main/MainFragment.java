@@ -80,7 +80,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                 }
             }
         });
-        mViewModel.getStatus().observe(this, new Observer<Status>() {
+        mViewModel.observeStatus().observe(this, new Observer<Status>() {
             @Override
             public void onChanged(Status status) {
                 if(status.status == State.ERROR) {
@@ -91,8 +91,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                 }
             }
         });
-        mViewModel.getLoadingState().observe(this, this::onLoading);
-        mViewModel.getEvents().observe(this, uiEvents -> {
+        mViewModel.observeLoadingState().observe(this, this::onLoading);
+        mViewModel.observeEvents().observe(this, uiEvents -> {
             mEventAdapter.onChanged(uiEvents);
             String title;
             if(uiEvents.size() > 0) {
@@ -205,10 +205,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         if (isLoading) {
             mToolbar.setTitle(R.string.searching_near_events);
             mGeneralMessage.setText(R.string.wait_please);
-            mRecyclerView.setAlpha(0);
-        }
-        else {
-            mRecyclerView.setAlpha(1f);
         }
     }
 

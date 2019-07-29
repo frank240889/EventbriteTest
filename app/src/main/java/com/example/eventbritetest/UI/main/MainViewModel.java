@@ -23,6 +23,7 @@ import javax.inject.Inject;
 
 /**
  * @author Franco Castillo
+ * The view model
  */
 public class MainViewModel extends BaseViewModel {
     private LiveData<List<UIEvent>> mLiveEvents;
@@ -37,7 +38,7 @@ public class MainViewModel extends BaseViewModel {
         mRepository = eventRepository;
     }
 
-    public LiveData<List<UIEvent>> getEvents() {
+    public LiveData<List<UIEvent>> observeEvents() {
         LiveData<Resource<List<Event>>> resource =
                 mRepository.getEvents();
         mLiveEvents = Transformations.map(resource, input -> {
@@ -49,7 +50,7 @@ public class MainViewModel extends BaseViewModel {
         return mLiveEvents;
     }
 
-    public LiveData<Status> getStatus() {
+    public LiveData<Status> observeStatus() {
         LiveData<Status> status = mRepository.getStatus();
         return Transformations.map(status, input -> {
             if(input.status == State.LOADING) {
