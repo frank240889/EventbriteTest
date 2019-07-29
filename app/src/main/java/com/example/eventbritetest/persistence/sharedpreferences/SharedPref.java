@@ -17,6 +17,14 @@ public class SharedPref {
         mSharedPreferences = application.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
     }
 
+    public boolean getBoolean(String key) {
+        return mSharedPreferences.getBoolean(key, false);
+    }
+
+    public void putBoolean(String key, boolean value) {
+        mSharedPreferences.edit().putBoolean(key, value).apply();
+    }
+
     public int getInt(String key) {
         return mSharedPreferences.getInt(key, -1);
     }
@@ -41,5 +49,10 @@ public class SharedPref {
     @SuppressLint("ApplySharedPref")
     public void putIntSync(String key, int value) {
         mSharedPreferences.edit().putInt(key, value).commit();
+    }
+
+    @SuppressLint("ApplySharedPref")
+    public void putBooleanSync(String key, boolean value) {
+        mSharedPreferences.edit().putBoolean(key, value).commit();
     }
 }

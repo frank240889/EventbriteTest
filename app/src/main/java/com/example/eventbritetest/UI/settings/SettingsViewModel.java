@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
-import com.example.eventbritetest.network.Constants;
+import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;

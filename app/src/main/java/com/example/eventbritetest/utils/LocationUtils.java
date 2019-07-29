@@ -3,9 +3,6 @@ package com.example.eventbritetest.utils;
 import android.location.Location;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.example.eventbritetest.network.Constants;
 
 public class LocationUtils {
     /**

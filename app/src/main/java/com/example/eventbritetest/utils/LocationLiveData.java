@@ -107,7 +107,6 @@ public class LocationLiveData extends LiveData<Location> implements
             sharedPref.putStringSync(EventbriteApiService.LOCATION_LATITUDE, location.getLatitude()+"");
             sharedPref.putStringSync(EventbriteApiService.LOCATION_LONGITUDE, location.getLongitude()+"");
         }
-        Log.d("GPS", "recibiendo locación");
         super.setValue(location);
     }
 

@@ -117,7 +117,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
         mRecyclerView = view.findViewById(R.id.list_events);
         mToolbar = view.findViewById(R.id.main_toolbar);
         mToolbar.setTitleTextColor(Color.WHITE);
@@ -140,7 +139,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
                 int totalItemCount = recyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
                 if (totalItemCount <= (lastVisibleItem + 1)) {

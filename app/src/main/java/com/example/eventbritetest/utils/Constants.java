@@ -1,4 +1,6 @@
-package com.example.eventbritetest.network;
+package com.example.eventbritetest.utils;
+
+import com.example.eventbritetest.network.DistanceUnit;
 
 public class Constants {
     public static final String DISTANCE_FROM_LOCATION = "distance_from_location";
@@ -8,4 +10,5 @@ public class Constants {
     public static final int NO_LOCATION_SAVED = -1;
     public static final DistanceUnit DEFAULT_DISTANCE_UNIT = DistanceUnit.KM;
     public static final String MAXIMUM_METERS_RANGE_TO_UPDATE = "maximum_meters_range_to_update";
+    public static final String FIRST_REQUEST_LOCATION = "first_request_location";
 }

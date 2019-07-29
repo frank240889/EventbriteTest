@@ -6,12 +6,13 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
+import com.example.eventbritetest.exception.EventdroidException;
+import com.example.eventbritetest.exception.EventdroidException.ExceptionType;
 import com.example.eventbritetest.interfaces.AsyncCallback;
 import com.example.eventbritetest.model.network.search.EventbriteEvent;
 import com.example.eventbritetest.model.persistence.Event;
-import com.example.eventbritetest.network.Constants;
+import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.room.Async;
@@ -32,6 +33,8 @@ import javax.inject.Inject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.*;
 
 public class EventRepository {
 
@@ -54,6 +57,7 @@ public class EventRepository {
     Call<EventbriteEvent> mEventbriteCall;
     private int mCurrentPage;
     private int mTotalPages;
+    private boolean mFirstRequestLocation;
 
     @Inject
     public EventRepository(EventbriteApiService apiService,
@@ -62,17 +66,13 @@ public class EventRepository {
 
         mApiService = apiService;
         mEventRoomDatabase = eventRoomDatabase;
-        mLiveResource = eventRoomDatabase.getEventDao().getAllEventsAsync();
         mSharedPref = sharedPref;
-        mMediatorLiveResource.addSource(mLiveResource,
-                new Observer<List<Event>>() {
-                    @Override
-                    public void onChanged(List<Event> events) {
-                        mMediatorLiveResource.setValue(Resource.done(events));
-                        mMediatorLiveResource.removeSource(mLiveResource);
-                    }
-                });
-
+        mLiveResource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+        /*mMediatorLiveResource.addSource(mLiveResource,
+                events -> {
+                    mMediatorLiveResource.setValue(Resource.done(events));
+                    mMediatorLiveResource.removeSource(mLiveResource);
+                });*/
         mSeekRangeRadius = getCurrentSeekingRangeRadius();
         mCurrentLocation = getCurrentLocation();
         mCurrentDistanceUnit = getCurrentDistanceUnit();
@@ -82,6 +82,7 @@ public class EventRepository {
 
         mTotalPages = mSharedPref.getInt(EventbriteApiService.TOTAL_PAGES) == -1 ? 1 :
                 mSharedPref.getInt(EventbriteApiService.TOTAL_PAGES);
+        mFirstRequestLocation = !mSharedPref.getBoolean(Constants.FIRST_REQUEST_LOCATION);
     }
 
     public LiveData<Resource<List<Event>>> getEvents() {
@@ -93,8 +94,16 @@ public class EventRepository {
     }
 
     public void fetchEvents(Location newLocation, boolean loadMore) {
-        if(mCurrentLocation == null);
-            mCurrentLocation = newLocation;
+        if(newLocation == null) {
+            mLiveStatus.setValue(Status.error(new EventdroidException("Location is null", NO_LOCATION_PROVIDED)));
+            return;
+        }
+
+        if(mFirstRequestLocation) {
+            mSharedPref.putBooleanSync(Constants.FIRST_REQUEST_LOCATION, false);
+        }
+
+        mCurrentLocation = newLocation;
 
         //float userOffset = LocationUtils.distanceBetween(newLocation, mCurrentLocation);
         //boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);
@@ -169,15 +178,12 @@ public class EventRepository {
 
 
     private void insertMore(List<Event> events) {
+        mMediatorLiveResource.addSource(mLiveResource,
+                e -> {
+                    mMediatorLiveResource.setValue(Resource.done(e));
+                    mMediatorLiveResource.removeSource(mLiveResource);
+                });
         new Async.Create(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Void, Void, Void>() {
-            @Override
-            public void onStart(Void start) {
-                mMediatorLiveResource.addSource(mLiveResource,
-                        e -> {
-                            mMediatorLiveResource.setValue(Resource.done(e));
-                            mMediatorLiveResource.removeSource(mLiveResource);
-                        });
-            }
             @Override
             public void onResult(Void result) {
                 mCurrentPage++;
@@ -187,15 +193,13 @@ public class EventRepository {
     }
 
     private void insertNews(List<Event> events) {
+        mMediatorLiveResource.addSource(mLiveResource,
+                e -> {
+                    mMediatorLiveResource.setValue(Resource.done(e));
+                    mMediatorLiveResource.removeSource(mLiveResource);
+                });
+
         new Async.Recreate(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Void, Void, Void>() {
-            @Override
-            public void onStart(Void start) {
-                mMediatorLiveResource.addSource(mLiveResource,
-                        e -> {
-                            mMediatorLiveResource.setValue(Resource.done(e));
-                            mMediatorLiveResource.removeSource(mLiveResource);
-                        });
-            }
             @Override
             public void onResult(Void result) {
                 mCurrentPage = 1;
