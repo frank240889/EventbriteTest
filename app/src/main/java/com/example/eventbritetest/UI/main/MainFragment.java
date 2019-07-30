@@ -5,12 +5,14 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,14 +35,11 @@ import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
 import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
-import com.example.eventbritetest.utils.State;
-import com.example.eventbritetest.utils.Status;
 import com.google.android.material.snackbar.Snackbar;
 
 import javax.inject.Inject;
 
 import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
-import static com.example.eventbritetest.utils.SnackBar.Action.REQUEST_FETCH_EVENTS;
 import static com.example.eventbritetest.utils.SnackBar.Action.REQUEST_LOCATION_PERMISSION;
 
 public class MainFragment extends BaseFragment<MainViewModel> implements SettingsFragment.SettingsListener {
@@ -52,6 +50,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     private ActionBar mActionBar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private TextView mGeneralMessage;
+    private FrameLayout mBlockingInteractionLayout;
 
     @Inject
     LocationLiveData locationLiveData;
@@ -80,17 +79,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                 }
             }
         });
-        mViewModel.observeStatus().observe(this, new Observer<Status>() {
-            @Override
-            public void onChanged(Status status) {
-                if(status.status == State.ERROR) {
-                    onSnackbarMessage(SnackBar.create(R.string.network_error,R.string.retry, REQUEST_FETCH_EVENTS));
-                    mActionBar.setTitle(R.string.no_near_events);
-                    mGeneralMessage.setVisibility(View.VISIBLE);
-                    mGeneralMessage.setText(status.throwable.getMessage());
-                }
-            }
-        });
+        mViewModel.observeNotificationMessage().observe(this, this::onMessage);
+        mViewModel.observeStatus().observe(this, status -> {});
         mViewModel.observeLoadingState().observe(this, this::onLoading);
         mViewModel.observeEvents().observe(this, uiEvents -> {
             mEventAdapter.onChanged(uiEvents);
@@ -106,7 +96,13 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             }
             mActionBar.setTitle(title);
         });
+
+        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
         setHasOptionsMenu(true);
+    }
+
+    private void onMessage(Integer integer) {
+        onSnackbarMessage(SnackBar.create(integer, SnackBar.NO_RESOURCE_ID, NONE));
     }
 
     @Override
@@ -122,6 +118,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         mToolbar.setTitleTextColor(Color.WHITE);
         mGeneralMessage = view.findViewById(R.id.text_view_general_message);
         mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_events);
+        mBlockingInteractionLayout = view.findViewById(R.id.blocking_layout);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
         mRecyclerView.setAdapter(mEventAdapter);
@@ -139,10 +136,13 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                int totalItemCount = recyclerView.getLayoutManager().getItemCount();
-                int lastVisibleItem = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-                if (totalItemCount <= (lastVisibleItem + 1)) {
-                    mViewModel.fetchEvents(null, true);
+                Log.d("DY", dy+"");
+                if(dy > 0) {
+                    int totalItemCount = recyclerView.getLayoutManager().getItemCount();
+                    int lastVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+                    if (totalItemCount <= (lastVisibleItem + 1)) {
+                        mViewModel.fetchEvents(null, true);
+                    }
                 }
             }
         });
@@ -200,6 +200,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     @Override
     protected void onLoading(Boolean isLoading) {
         mSwipeRefreshLayout.setRefreshing(isLoading);
+        mBlockingInteractionLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         if (isLoading) {
             mToolbar.setTitle(R.string.searching_near_events);
             mGeneralMessage.setText(R.string.wait_please);
@@ -232,7 +233,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         else {
             createSnackbarWithAction(snackBar);
         }
-
     }
 
     private void createSnackbarWithAction(SnackBar snackBar) {

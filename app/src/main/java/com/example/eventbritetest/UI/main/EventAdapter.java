@@ -97,12 +97,12 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
                                                    boolean isFirstResource) {
                         if (resource != null) {
                             Palette p = Palette.from(resource).generate();
-                            int colorPalette = p.getDominantColor(ContextCompat.getColor(holder.itemView.getContext(),
+                            int dominantColor = p.getDominantColor(ContextCompat.getColor(holder.itemView.getContext(),
                                     R.color.colorPrimary));
-                            uiEvent.setDominantColor(colorPalette);
+                            uiEvent.setDominantColor(dominantColor);
                         }
                         else {
-                            uiEvent.setDominantColor(R.color.colorPrimary);
+                            uiEvent.setDominantColor(0);
                         }
                         return false;
                     }
@@ -122,7 +122,7 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
 
             mPendingUpdates.push(uiEvents);
             DiffUtil.DiffResult diffResult = DiffUtil.
-                    calculateDiff(new EventDiff(uiEvents, mDatasource),false);
+                    calculateDiff(new EventDiff(mDatasource, uiEvents),false);
             diffResult.dispatchUpdatesTo(this);
             mDatasource.clear();
             mDatasource.addAll(uiEvents);

@@ -8,16 +8,15 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.eventbritetest.exception.EventdroidException;
-import com.example.eventbritetest.exception.EventdroidException.ExceptionType;
 import com.example.eventbritetest.interfaces.AsyncCallback;
 import com.example.eventbritetest.model.network.search.EventbriteEvent;
 import com.example.eventbritetest.model.persistence.Event;
-import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.room.Async;
 import com.example.eventbritetest.persistence.room.EventRoomDatabase;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
+import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.utils.EventbriteUtils;
 import com.example.eventbritetest.utils.Resource;
 import com.example.eventbritetest.utils.Status;
@@ -34,7 +33,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.*;
+import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.NO_LOCATION_PROVIDED;
+import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.NO_REMAIN_DATA;
+import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.PARSING;
 
 public class EventRepository {
 
@@ -57,6 +58,7 @@ public class EventRepository {
     Call<EventbriteEvent> mEventbriteCall;
     private int mCurrentPage;
     private int mTotalPages;
+    private boolean mLoadingMore = false;
     private boolean mFirstRequestLocation;
 
     @Inject
@@ -68,11 +70,9 @@ public class EventRepository {
         mEventRoomDatabase = eventRoomDatabase;
         mSharedPref = sharedPref;
         mLiveResource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
-        /*mMediatorLiveResource.addSource(mLiveResource,
-                events -> {
-                    mMediatorLiveResource.setValue(Resource.done(events));
-                    mMediatorLiveResource.removeSource(mLiveResource);
-                });*/
+        mMediatorLiveResource.addSource(mLiveResource,
+                events -> mMediatorLiveResource.setValue(Resource.done(events)));
+
         mSeekRangeRadius = getCurrentSeekingRangeRadius();
         mCurrentLocation = getCurrentLocation();
         mCurrentDistanceUnit = getCurrentDistanceUnit();
@@ -95,95 +95,125 @@ public class EventRepository {
 
     public void fetchEvents(Location newLocation, boolean loadMore) {
         if(newLocation == null) {
-            mLiveStatus.setValue(Status.error(new EventdroidException("Location is null", NO_LOCATION_PROVIDED)));
-            return;
-        }
-
-        if(mFirstRequestLocation) {
-            mSharedPref.putBooleanSync(Constants.FIRST_REQUEST_LOCATION, false);
-        }
-
-        mCurrentLocation = newLocation;
-
-        //float userOffset = LocationUtils.distanceBetween(newLocation, mCurrentLocation);
-        //boolean userHasMovedEnoughToUpdate = userHasMovedEnough(userOffset);
-        //Will be activated when setting to search event from user location or custom location is implemented.
-        //boolean isSameLocation = isSameLocation(newLocation);
-        //Log.d(EventRepository.class.getName(),
-        //        "user has moved: " + userOffset + "so user has moved enough:" + userHasMovedEnoughToUpdate);
-        DistanceUnit distanceUnit = getCurrentDistanceUnit();
-        boolean distanceUnitHasChanged = distanceUnitHasChanged(distanceUnit);
-
-        int seekRange = getCurrentSeekingRangeRadius();
-        boolean seekRangeHasChanged = seekRangeRadiusHasChanged(seekRange);
-
-        //boolean hasChangedMaximumMetersRangeToUpdate = hasChangedMaximumMetersRangeToUpdate();
-        mParams.put(EventbriteApiService.LOCATION_WITHIN, currentSeekRangeRadius());
-        mParams.put(EventbriteApiService.LOCATION_LATITUDE, String.valueOf(mCurrentLocation.getLatitude()));
-        mParams.put(EventbriteApiService.LOCATION_LONGITUDE, String.valueOf(mCurrentLocation.getLongitude()));
-
-        new Async.Count(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
-            @Override
-            public void onResult(Integer result) {
-
-                if(!loadMore && result == 0 || distanceUnitHasChanged || seekRangeHasChanged) {
-                    mParams.put(EventbriteApiService.CURRENT_PAGE, 1+"");
-                    fetchFromRemote(mParams, false);
-                }
-                else if(loadMore) {
-                    mParams.put(EventbriteApiService.CURRENT_PAGE, String.valueOf(mCurrentPage + 1));
-                    fetchFromRemote(mParams, loadMore);
-                }
-                else {
-                    mLiveStatus.setValue(Status.done());
-                }
+            if(loadMore) {
+                mParams.put(EventbriteApiService.CURRENT_PAGE, String.valueOf(mCurrentPage + 1));
+                loadMore(mParams);
             }
-        }).executeOnExecutor(Executors.newCachedThreadPool());
+            else {
+                mLiveStatus.setValue(Status.error(new EventdroidException("Location is null.", NO_LOCATION_PROVIDED)));
+            }
+        }
+        else {
+            if(mFirstRequestLocation) {
+                mSharedPref.putBooleanSync(Constants.FIRST_REQUEST_LOCATION, false);
+            }
+
+            mCurrentLocation = newLocation;
+
+            DistanceUnit distanceUnit = getCurrentDistanceUnit();
+            boolean distanceUnitHasChanged = distanceUnitHasChanged(distanceUnit);
+
+            int seekRange = getCurrentSeekingRangeRadius();
+            boolean seekRangeHasChanged = seekRangeRadiusHasChanged(seekRange);
+
+            mParams.put(EventbriteApiService.LOCATION_WITHIN, currentSeekRangeRadius());
+            mParams.put(EventbriteApiService.LOCATION_LATITUDE, String.valueOf(mCurrentLocation.getLatitude()));
+            mParams.put(EventbriteApiService.LOCATION_LONGITUDE, String.valueOf(mCurrentLocation.getLongitude()));
+
+            new Async.Count(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
+                @Override
+                public void onResult(Integer result) {
+                    if(result == 0 || distanceUnitHasChanged || seekRangeHasChanged) {
+                        mParams.put(EventbriteApiService.CURRENT_PAGE, 1+"");
+                        fetchFromRemote(mParams, false);
+                    }
+                    else {
+                        mLiveStatus.setValue(Status.done());
+                    }
+                }
+            }).executeOnExecutor(Executors.newCachedThreadPool());
+        }
+    }
+
+    private void loadMore(HashMap<String, String> params) {
+        if(mLoadingMore)
+            return;
+
+        mLoadingMore = true;
+        if(mCurrentPage < (mTotalPages + 1)) {
+          fetchFromRemote(params, true);
+        }
+        else {
+          mLiveStatus.setValue(Status.error(new EventdroidException("No more data.", NO_REMAIN_DATA)));
+          mLoadingMore = false;
+        }
     }
 
     private void fetchFromRemote(HashMap<String, String> params, boolean loadMore) {
+        mLiveStatus.setValue(Status.busy());
+        mEventbriteCall = mApiService.fetchEvents(params);
+        mEventbriteCall.enqueue(getCallback(loadMore));
+    }
 
-        if(loadMore && mCurrentPage > mTotalPages) {
-            mLiveStatus.setValue(Status.error(new Exception("No more data.")));
-        }
-        else {
-            mLiveStatus.setValue(Status.busy());
-            mEventbriteCall = mApiService.fetchEvents(params);
-            mEventbriteCall.enqueue(new Callback<EventbriteEvent>() {
+    private Callback<EventbriteEvent> getCallback(boolean loadMore) {
+        if(loadMore)
+            return new Callback<EventbriteEvent>() {
+                @Override
+                public void onResponse(@NotNull Call<EventbriteEvent> call, @NotNull Response<EventbriteEvent> response) {
+                    List<Event> events;
+                    if(response.isSuccessful()) {
+                        if(response.body() != null && response.body().getEvents() != null) {
+                            events = EventbriteUtils.toPersistenceEvents(response.body());
+                            insertMore(events);
+                        }
+                        else {
+                            mLiveStatus.setValue(Status.error(new EventdroidException("No data.", PARSING)));
+                        }
+                    }
+
+                    mLoadingMore = false;
+                }
+                @Override
+                public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
+                    mLiveStatus.setValue(Status.error(t));
+                    mLoadingMore = false;
+                }
+            };
+
+        else
+            return new Callback<EventbriteEvent>() {
                 @Override
                 public void onResponse(@NotNull Call<EventbriteEvent> call, @NotNull Response<EventbriteEvent> response) {
                     List<Event> events;
                     if(response.body() != null && response.body().getEvents() != null) {
                         events = EventbriteUtils.toPersistenceEvents(response.body());
-
-                        if(loadMore) {
-                            insertMore(events);
-                        }
-                        else {
-                            mTotalPages = response.body().getPagination().getPageSize();
-                            insertNews(events);
-                        }
+                        mTotalPages = response.body().getPagination().getPageCount();
+                        mSharedPref.putIntSync(EventbriteApiService.TOTAL_PAGES, mTotalPages);
+                        insertNews(events);
                     }
                     else {
-                        mLiveStatus.setValue(Status.error(new Exception("No data.")));
+                        mLiveStatus.setValue(Status.error(new EventdroidException("No data.", PARSING)));
                     }
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
                     mLiveStatus.setValue(Status.error(t));
                 }
-            });
-        }
+            };
     }
 
 
     private void insertMore(List<Event> events) {
-        mMediatorLiveResource.addSource(mLiveResource,
-                e -> {
-                    mMediatorLiveResource.setValue(Resource.done(e));
-                    mMediatorLiveResource.removeSource(mLiveResource);
-                });
         new Async.Create(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Void, Void, Void>() {
+            @Override
+            public void onStart(Void start) {
+                LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                mMediatorLiveResource.addSource(resource,
+                        e -> {
+                            mMediatorLiveResource.setValue(Resource.done(e));
+                            mMediatorLiveResource.removeSource(resource);
+                        });
+            }
             @Override
             public void onResult(Void result) {
                 mCurrentPage++;
@@ -193,13 +223,16 @@ public class EventRepository {
     }
 
     private void insertNews(List<Event> events) {
-        mMediatorLiveResource.addSource(mLiveResource,
-                e -> {
-                    mMediatorLiveResource.setValue(Resource.done(e));
-                    mMediatorLiveResource.removeSource(mLiveResource);
-                });
-
         new Async.Recreate(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Void, Void, Void>() {
+            @Override
+            public void onStart(Void start) {
+                LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                mMediatorLiveResource.addSource(resource,
+                        e -> {
+                            mMediatorLiveResource.setValue(Resource.done(e));
+                            mMediatorLiveResource.removeSource(resource);
+                        });
+            }
             @Override
             public void onResult(Void result) {
                 mCurrentPage = 1;
@@ -231,15 +264,6 @@ public class EventRepository {
     private float getMaximumMetersRangeToUpdate() {
         return mSharedPref.getInt(Constants.MAXIMUM_METERS_RANGE_TO_UPDATE) <= 500 ?
                 Constants.DEFAULT_RANGE_IN_METERS_TO_UPDATE : mSharedPref.getInt(Constants.MAXIMUM_METERS_RANGE_TO_UPDATE);
-    }
-
-    private boolean hasChangedMaximumMetersRangeToUpdate() {
-        if(getMaximumMetersRangeToUpdate() != mRangeToUpdate) {
-            mRangeToUpdate = getMaximumMetersRangeToUpdate();
-            return true;
-        }
-
-        return false;
     }
 
     @Nullable

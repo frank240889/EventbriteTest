@@ -96,6 +96,7 @@ public class LocationLiveData extends LiveData<Location> implements
         mFusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
+                Log.d("LOCATION", "on success getLastLocation");
                 setValue(location);
             }
         });
@@ -115,6 +116,7 @@ public class LocationLiveData extends LiveData<Location> implements
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 Location location = locationResult.getLastLocation();
+                Log.d("LOCATION", "onLocationResult");
                 setValue(location);
             }
 
@@ -128,10 +130,10 @@ public class LocationLiveData extends LiveData<Location> implements
     private LocationRequest getLocationRequest() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        /*locationRequest.setFastestInterval(60000);
-        locationRequest.setInterval(60000);
-        locationRequest.setMaxWaitTime(120000);*/
-        locationRequest.setSmallestDisplacement(30);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setInterval(10000);
+        locationRequest.setMaxWaitTime(15000);
+        //locationRequest.setSmallestDisplacement(100);
         return locationRequest;
     }
 }

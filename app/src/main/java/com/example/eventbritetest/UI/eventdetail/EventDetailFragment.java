@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +19,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
@@ -68,14 +74,9 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     public void onAttach(Context context) {
         super.onAttach(context);
         mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
-                R.color.colorPrimary : getArguments().getInt(DOMINANT_COLOR);
-
-        if(mDominantColor == R.color.colorPrimary) {
-            mInvertedDominantColor = R.color.white_overlay;
-        }
-        else {
-            mInvertedDominantColor = ColorUtils.invertColor(mDominantColor);
-        }
+                ContextCompat.getColor(context,
+                        R.color.colorPrimary) : getArguments().getInt(DOMINANT_COLOR);
+        mInvertedDominantColor = ColorUtils.invertColor(mDominantColor);
     }
 
     @Override
@@ -94,7 +95,6 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
 
     @Override
     protected void onLoading(Boolean isLoading) {
-        //mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         mLoadingProgressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
@@ -120,7 +120,6 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         mTextViewAddress.getCompoundDrawablesRelative()[0].setColorFilter(mInvertedDominantColor, PorterDuff.Mode.SRC_IN);
         mImageViewLogo = view.findViewById(R.id.event_image);
         mLoadingProgressBar = view.findViewById(R.id.loading_progress);
-        //mLoadingLayout = view.findViewById(R.id.loading_layout);
         mRootEventDetailContainer = view.findViewById(R.id.event_detail_root_container);
         mContainerTitle = view.findViewById(R.id.event_title_container);
         mNestedScrollView = view.findViewById(R.id.scrollable_container);
@@ -164,6 +163,19 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
                 fitCenter().
                 transition(DrawableTransitionOptions.withCrossFade(150)).
                 placeholder(R.drawable.ic_placeholder_material_24dp).
+                addListener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        mImageViewLogo.setImageDrawable(getContext().getDrawable(R.drawable.ic_placeholder_material_24dp));
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mImageViewLogo.setImageDrawable(null);
+                        return false;
+                    }
+                }).
                 into(mImageViewLogo);
     }
 

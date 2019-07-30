@@ -31,6 +31,12 @@
         android:layout_height="match_parent"
         android:background="@color/white_overlay"
         android:orientation="vertical">
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/label_for_edit_text_unit"
@@ -67,13 +73,6 @@
             tools:itemCount="2"
             tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
-
         <Button
             android:id="@+id/save_setting_button"
             android:layout_width="0dp"
@@ -89,6 +88,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/label_for_edit_text_unit" />
+
+        <!--fragment
+            class="com.google.android.gms.maps.MapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/save_setting_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_for_edit_text_unit" /-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

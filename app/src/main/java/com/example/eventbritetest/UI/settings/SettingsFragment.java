@@ -20,9 +20,13 @@ import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.interfaces.OnItemClick;
 import com.example.eventbritetest.utils.RoundedSnackbar;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.material.snackbar.Snackbar;
 
-public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<SettingsViewModel> {
+public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<SettingsViewModel> implements
+        OnMapReadyCallback {
+
     public interface SettingsListener {
         void onSettingsChange();
     }
@@ -139,5 +143,10 @@ public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<Setti
             public void afterTextChanged(Editable s) {
             }
         });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
     }
 }

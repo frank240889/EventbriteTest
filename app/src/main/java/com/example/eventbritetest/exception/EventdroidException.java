@@ -4,6 +4,7 @@ public class EventdroidException extends Exception {
     protected ExceptionType exceptionType;
     public EventdroidException(String message, ExceptionType exceptionType) {
         super(message);
+        this.exceptionType = exceptionType;
     }
 
     public ExceptionType getExceptionType() {

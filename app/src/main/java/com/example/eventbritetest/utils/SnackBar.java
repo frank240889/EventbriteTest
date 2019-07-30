@@ -37,7 +37,8 @@ public class SnackBar {
         REQUEST_LOCATION,
         REQUEST_FETCH_EVENTS,
         REQUEST_EVENT_DETAIL,
-        ERROR
+        ERROR,
+        NETWORK_ERROR
     }
 
 }

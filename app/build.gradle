@@ -9,10 +9,10 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [apikeymaps: "AIzaSyCRLsLCbNzC41Yf_dZt4Ig7PYDBEZ7vSOQ"]
     }
 
     buildTypes {
-
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

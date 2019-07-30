@@ -115,7 +115,8 @@ public class EventDetailViewModel extends BaseViewModel {
 
         String end = eventDetail.getEnd().getLocal().toUpperCase();
 
-        String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay().toUpperCase();
+        String address = eventDetail.getVenue().getAddress().getLocalizedAddressDisplay() != null ?
+                eventDetail.getVenue().getAddress().getLocalizedAddressDisplay().toUpperCase():"No disponible.";
 
         String organizer = eventDetail.getOrganizer() != null && eventDetail.getOrganizer().getName() != null ?
                 eventDetail.getOrganizer().getName()

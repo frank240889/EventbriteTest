@@ -33,6 +33,9 @@ public class EventDiff extends DiffUtil.Callback {
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
         UIEvent currentUIEvent = mCurrentList.get(oldItemPosition);
         UIEvent newUIEvent = mNewList.get(newItemPosition);
+        if(newUIEvent == null)
+            return false;
+
         return currentUIEvent.getId().equals(newUIEvent.getId());
 
     }
@@ -41,6 +44,10 @@ public class EventDiff extends DiffUtil.Callback {
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
         UIEvent currentUIEvent = mCurrentList.get(oldItemPosition);
         UIEvent newUIEvent = mNewList.get(newItemPosition);
+
+        if(newUIEvent == null)
+            return false;
+
         return currentUIEvent.getId().equals(newUIEvent.getId());
     }
 

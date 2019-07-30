@@ -5,7 +5,7 @@ public class UIEvent {
     private String mName;
     private String mDescription;
     private String mUrlPreview;
-    private int mDominantColor;
+    private int mDominantColor = 0;
 
     public UIEvent() {
     }
@@ -22,7 +22,7 @@ public class UIEvent {
         return mId;
     }
 
-    public void setmId(String id) {
+    public void setId(String id) {
         this.mId = id;
     }
 
@@ -30,7 +30,7 @@ public class UIEvent {
         return mName;
     }
 
-    public void setmName(String name) {
+    public void setName(String name) {
         this.mName = name;
     }
 

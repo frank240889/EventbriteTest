@@ -30,8 +30,10 @@
         <activity
             android:name=".UI.main.MainActivity"
             tools:ignore="InnerclassSeparator">
-
         </activity>
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="${apikeymaps}"/>
     </application>
 
 </manifest>

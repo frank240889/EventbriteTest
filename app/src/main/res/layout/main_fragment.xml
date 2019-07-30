@@ -40,7 +40,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_toolbar">
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list_events"
             android:layout_width="0dp"
@@ -53,4 +52,16 @@
             tools:itemCount="5"
             tools:listitem="@layout/item_event_holder_2" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:id="@+id/blocking_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="@+id/swipe_refresh_layout_events"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/swipe_refresh_layout_events"
+        tools:ignore="KeyboardInaccessibleWidget" />
 </androidx.constraintlayout.widget.ConstraintLayout>
