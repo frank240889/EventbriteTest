@@ -62,7 +62,7 @@ public class MainViewModel extends BaseViewModel {
                 mLiveLoading.setValue(false);
                 if(input.throwable != null) {
                     input.idResource = AndroidUtils.
-                            stringResourceFactory(input.throwable, getApplication());
+                            stringResourceFactory(input.throwable);
                     SnackBar snackBar = getSnackBar(input);
                     mSnackbar.setValue(snackBar);
                 }
@@ -90,14 +90,12 @@ public class MainViewModel extends BaseViewModel {
                 ((EventdroidException)input.throwable).getExceptionType();
 
         switch (exceptionType) {
+            case PARSING:
             case NO_NETWORK:
-                return SnackBar.Action.NETWORK_ERROR;
             case TIME_OUT:
                 return SnackBar.Action.REQUEST_FETCH_EVENTS;
             case NO_LOCATION_PROVIDED:
                 return SnackBar.Action.REQUEST_LOCATION;
-            case PARSING:
-                return SnackBar.Action.REQUEST_FETCH_EVENTS;
                 default:
                     return SnackBar.Action.ERROR;
         }

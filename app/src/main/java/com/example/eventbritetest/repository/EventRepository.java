@@ -175,7 +175,7 @@ public class EventRepository {
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
-                    mLiveStatus.setValue(Status.error(t));
+                    mLiveStatus.setValue(Status.error(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
                     mLoadingMore = false;
                 }
             };
@@ -197,7 +197,7 @@ public class EventRepository {
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
-                    mLiveStatus.setValue(Status.error(t));
+                    mLiveStatus.setValue(Status.error(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
                 }
             };
     }

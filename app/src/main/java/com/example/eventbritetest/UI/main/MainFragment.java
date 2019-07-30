@@ -50,6 +50,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private TextView mGeneralMessage;
     private FrameLayout mBlockingInteractionLayout;
+    private boolean mLoadingMore = false;
 
     @Inject
     LocationLiveData locationLiveData;
@@ -76,8 +77,15 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                         show(MainFragment.this.getChildFragmentManager(), EventDetailFragment.class.getName());
             }
         });
+
+        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
         mViewModel.observeNotificationMessage().observe(this, this::onMessage);
-        mViewModel.observeStatus().observe(this, status -> {});
+        mViewModel.observeStatus().observe(this, status -> {
+            if(status.throwable != null) {
+                mActionBar.setTitle(R.string.no_near_events);
+                mGeneralMessage.setText(R.string.swipe_down_to_retry);
+            }
+        });
         mViewModel.observeLoadingState().observe(this, this::onLoading);
         mViewModel.observeEvents().observe(this, uiEvents -> {
             mEventAdapter.onChanged(uiEvents);
@@ -93,9 +101,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             }
             mActionBar.setTitle(title);
         });
-
-        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
         setHasOptionsMenu(true);
+        fetchOrRequestPermissions();
     }
 
     private void onMessage(Integer integer) {
@@ -135,11 +142,10 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                Log.d("DY", dy+"");
                 if(dy > 0) {
                     int totalItemCount = recyclerView.getLayoutManager().getItemCount();
                     int lastVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-                    if (totalItemCount <= (lastVisibleItem + 1)) {
+                    if (totalItemCount <= (lastVisibleItem + 1) && !mLoadingMore) {
                         mViewModel.fetchEvents(null, true);
                     }
                 }
@@ -147,7 +153,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         });
 
         mSwipeRefreshLayout.setOnRefreshListener(MainFragment.this::fetchOrRequestPermissions);
-        fetchOrRequestPermissions();
     }
 
     @Override
@@ -198,6 +203,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
 
     @Override
     protected void onLoading(Boolean isLoading) {
+        mLoadingMore = isLoading;
         mSwipeRefreshLayout.setRefreshing(isLoading);
         mBlockingInteractionLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         if (isLoading) {

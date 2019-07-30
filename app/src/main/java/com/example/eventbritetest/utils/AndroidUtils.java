@@ -9,9 +9,11 @@ import androidx.annotation.IntegerRes;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.exception.EventdroidException;
 
+import java.net.UnknownHostException;
+
 public class AndroidUtils {
 
-    public static Drawable getRoundedDrawable(int backgroundColor, Context context) {
+    public static Drawable getRoundedCornersDrawable(int backgroundColor, Context context) {
         float pxs = 16 * context.getResources().getDisplayMetrics().density;
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
@@ -21,11 +23,14 @@ public class AndroidUtils {
     }
 
     @IntegerRes
-    public static int stringResourceFactory(Throwable throwable, Context context) {
+    public static int stringResourceFactory(Throwable throwable) {
         @IntegerRes int resourceId;
         if(throwable instanceof EventdroidException) {
             EventdroidException eventdroidException = (EventdroidException) throwable;
             resourceId = getMessage(eventdroidException);
+        }
+        else if(throwable instanceof UnknownHostException) {
+            resourceId = R.string.network_error;
         }
         else {
             resourceId = R.string.unknown_error;
