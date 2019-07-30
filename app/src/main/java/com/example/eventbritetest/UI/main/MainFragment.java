@@ -29,7 +29,6 @@ import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseFragment;
 import com.example.eventbritetest.UI.eventdetail.EventDetailFragment;
 import com.example.eventbritetest.UI.settings.SettingsFragment;
-import com.example.eventbritetest.interfaces.OnItemClick;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
@@ -67,16 +66,14 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mEventAdapter = new EventAdapter(new OnItemClick() {
-            @Override
-            public void onItemClick(int position, View view) {
-                if(view.getId() == R.id.event_details) {
-                    EventDetailFragment eventDetailFragment =
-                            EventDetailFragment.newInstance(mViewModel.getEvent(position).getId(),
-                                    mViewModel.getEvent(position).getDominantColor());
-                    eventDetailFragment.
-                            show(MainFragment.this.getChildFragmentManager(), EventDetailFragment.class.getName());
-                }
+        mEventAdapter = new EventAdapter((position, view) -> {
+            if(view.getId() == R.id.event_details) {
+
+                EventDetailFragment eventDetailFragment =
+                        EventDetailFragment.newInstance(mViewModel.getEvent(position).getId(),
+                                mViewModel.getEvent(position).getDominantColor());
+                eventDetailFragment.
+                        show(MainFragment.this.getChildFragmentManager(), EventDetailFragment.class.getName());
             }
         });
         mViewModel.observeNotificationMessage().observe(this, this::onMessage);
@@ -122,10 +119,12 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
         mRecyclerView.setAdapter(mEventAdapter);
+        mSwipeRefreshLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(getActivity(), R.color.dark));
         mSwipeRefreshLayout.setColorSchemeColors(
                 ContextCompat.getColor(getActivity(), R.color.colorPrimary),
                 ContextCompat.getColor(getActivity(), R.color.colorAccent),
-                ContextCompat.getColor(getActivity(), R.color.primaryDarkColor)
+                ContextCompat.getColor(getActivity(), R.color.primaryDarkColor),
+                ContextCompat.getColor(getActivity(), R.color.colorAccentSecondary)
         );
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {

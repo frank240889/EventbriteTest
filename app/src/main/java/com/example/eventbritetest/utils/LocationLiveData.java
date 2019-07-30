@@ -130,10 +130,10 @@ public class LocationLiveData extends LiveData<Location> implements
     private LocationRequest getLocationRequest() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setInterval(10000);
-        locationRequest.setMaxWaitTime(15000);
-        //locationRequest.setSmallestDisplacement(100);
+        //locationRequest.setFastestInterval(5000);
+        //locationRequest.setInterval(10000);
+        //locationRequest.setMaxWaitTime(15000);
+        locationRequest.setSmallestDisplacement(250);
         return locationRequest;
     }
 }
