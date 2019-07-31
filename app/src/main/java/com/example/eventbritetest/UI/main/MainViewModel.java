@@ -78,6 +78,9 @@ public class MainViewModel extends BaseViewModel {
                         EventdroidException.ExceptionType.NO_REMAIN_DATA) {
             return SnackBar.create(input.idResource, SnackBar.NO_RESOURCE_ID, SnackBar.Action.NONE);
         }
+        else if(input.wasLoadMore) {
+            return SnackBar.create(input.idResource, R.string.retry, SnackBar.Action.REQUEST_MORE_EVENTS);
+        }
         else {
             SnackBar.Action action = getAction(input);
             return SnackBar.create(input.idResource, R.string.retry,action);

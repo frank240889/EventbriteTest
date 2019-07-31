@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,16 +17,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
@@ -40,6 +37,8 @@ import com.example.eventbritetest.utils.SnackBar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
+
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
@@ -167,6 +166,12 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
                 load(value).
                 fitCenter().
                 placeholder(R.drawable.ic_placeholder_material_24dp).
+                apply(new RequestOptions().
+                        transform(
+                                new RoundedCornersTransformation(
+                                        (int) AndroidUtils.dpToPx(16, getContext()),
+                                        0,
+                                        RoundedCornersTransformation.CornerType.ALL))).
                 addListener(new RequestListener<Bitmap>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
@@ -191,6 +196,12 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
                                     R.color.white_overlay);
 
                             setColor();
+                            FrameLayout bottomSheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                            bottomSheet.setBackground(AndroidUtils.getRoundedCornersDrawable(mDominantColor, getActivity()));
+                            BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                            bottomSheetBehavior.setSkipCollapsed(true);
+                            getDialog().getWindow().setNavigationBarColor(mDominantColor);
                         }
                         return false;
                     }

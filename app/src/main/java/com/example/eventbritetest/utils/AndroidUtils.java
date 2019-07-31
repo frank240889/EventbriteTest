@@ -9,12 +9,13 @@ import androidx.annotation.IntegerRes;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.exception.EventdroidException;
 
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class AndroidUtils {
 
     public static Drawable getRoundedCornersDrawable(int backgroundColor, Context context) {
-        float pxs = 16 * context.getResources().getDisplayMetrics().density;
+        float pxs = dpToPx(16,context);
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setColor(backgroundColor);
@@ -29,7 +30,7 @@ public class AndroidUtils {
             EventdroidException eventdroidException = (EventdroidException) throwable;
             resourceId = getMessage(eventdroidException);
         }
-        else if(throwable instanceof UnknownHostException) {
+        else if(throwable instanceof UnknownHostException || throwable instanceof SocketTimeoutException) {
             resourceId = R.string.network_error;
         }
         else {
@@ -60,8 +61,9 @@ public class AndroidUtils {
                 default:
                     return R.string.unknown_error;
         }
+    }
 
-
-
+    public static float dpToPx(int dp, Context context) {
+        return dp * context.getResources().getDisplayMetrics().density;
     }
 }

@@ -168,6 +168,12 @@ public class EventRepository {
                         }
                         else {
                             mLiveStatus.setValue(Status.error(new EventdroidException("No data.", PARSING)));
+                            LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                            mMediatorLiveResource.addSource(resource,
+                                    e -> {
+                                        mMediatorLiveResource.setValue(Resource.done(e));
+                                        mMediatorLiveResource.removeSource(resource);
+                                    });
                         }
                     }
 
@@ -175,8 +181,14 @@ public class EventRepository {
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
-                    mLiveStatus.setValue(Status.error(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
+                    mLiveStatus.setValue(Status.errorLoadingMore(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
                     mLoadingMore = false;
+                    LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                    mMediatorLiveResource.addSource(resource,
+                            e -> {
+                                mMediatorLiveResource.setValue(Resource.done(e));
+                                mMediatorLiveResource.removeSource(resource);
+                            });
                 }
             };
 

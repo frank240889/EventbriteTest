@@ -5,7 +5,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -257,6 +256,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         Permission.LOCATION.ordinal()
                 );
+            case REQUEST_MORE_EVENTS:
+                return v -> mViewModel.fetchEvents(null, true);
         }
         return null;
     }
