@@ -49,15 +49,15 @@ public abstract class BaseRoundedBottomSheetDialogFragment<V> extends BottomShee
         return R.style.BottomSheetDialogTheme;
     }
 
-    protected abstract void onLoading(Boolean isLoading);
+    protected void onLoading(Boolean isLoading){}
 
     public abstract V getViewModel();
 
-    protected void onSnackbarMessage(SnackBar snackBar){};
+    protected void onSnackbarMessage(SnackBar snackBar){}
 
-    protected void createSnackbarWithAction(SnackBar snackBar){};
+    protected void createSnackbarWithAction(SnackBar snackBar){}
 
     protected View.OnClickListener getOnClickListener(SnackBar snackBar){
         return null;
-    };
+    }
 }

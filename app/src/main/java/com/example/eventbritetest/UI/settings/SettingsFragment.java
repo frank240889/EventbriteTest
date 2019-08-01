@@ -19,10 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.interfaces.OnItemClick;
-import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.material.snackbar.Snackbar;
 
 public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<SettingsViewModel> implements
         OnMapReadyCallback {
@@ -71,17 +69,10 @@ public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<Setti
 
             }
         });
-
         mViewModel.observeCurrentRange().observe(this, this::onRangeRead);
         mViewModel.observeUnitList().observe(this, mOptionUnitAdapter);
-        mViewModel.observeNotificationMessage().observe(this, this::onMessage);
+        mViewModel.observeMessageState().observe(this, this::onSnackbarMessage);
         mViewModel.observeSettingChanges().observe(this, this::onSettingsChange);
-        mViewModel.observeLoaderState().observe(this, this::onLoading);
-    }
-
-    @Override
-    protected void onLoading(Boolean isLoading) {
-
     }
 
     @Nullable
@@ -120,10 +111,6 @@ public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<Setti
                 dismiss();
             }
         }
-    }
-
-    private void onMessage(Integer resourceId) {
-        RoundedSnackbar.make(mRecyclerViewUnits, resourceId, Snackbar.LENGTH_SHORT).show();
     }
 
     private void onRangeRead(String value) {

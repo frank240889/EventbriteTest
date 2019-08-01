@@ -11,7 +11,7 @@ public class AndroidUtils {
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setColor(backgroundColor);
-        shape.setCornerRadii(new float[]{pxs,pxs,pxs,pxs,pxs,pxs,pxs,pxs});
+        shape.setCornerRadii(new float[]{pxs,pxs,pxs,pxs,0,0,0,0});
         return shape;
     }
 

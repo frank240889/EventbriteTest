@@ -6,6 +6,7 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
@@ -13,6 +14,7 @@ import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.Constants;
+import com.example.eventbritetest.utils.ErrorState;
 import com.example.eventbritetest.utils.SnackBar;
 
 import java.util.List;
@@ -32,6 +34,8 @@ public class SettingsViewModel extends BaseViewModel {
     private Location mCurrentLocation;
     private Location mNewLocation;
     private List<DistanceUnit.Unit> mUnits;
+    private MutableLiveData<Boolean> booleanMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<ErrorState> errorStateMutableLiveData = new MutableLiveData<>();
 
     @Inject
     public SettingsViewModel(@NonNull Application application, SharedPref sharedPref) {
@@ -43,6 +47,7 @@ public class SettingsViewModel extends BaseViewModel {
         mUnits = buildUnitList();
         mLiveUnits.setValue(mUnits);
         mLiveCurrentRange.setValue(mCurrentRange+"");
+        booleanMutableLiveData.setValue(true);
     }
 
     public LiveData<String> observeCurrentRange() {
@@ -183,11 +188,13 @@ public class SettingsViewModel extends BaseViewModel {
 
     @Override
     protected LiveData<Boolean> observeLoaderState() {
-        return null;
+        mLiveLoading = Transformations.map(booleanMutableLiveData, input -> input);
+        return mLiveLoading;
     }
 
     @Override
     protected LiveData<SnackBar> observeMessageState() {
-        return null;
+        mSnackbar = Transformations.map(errorStateMutableLiveData, input -> getSnackBar(input));
+        return mSnackbar;
     }
 }

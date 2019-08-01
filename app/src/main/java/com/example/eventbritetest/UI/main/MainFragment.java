@@ -257,6 +257,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Permission.LOCATION.ordinal());
         }
         else {
+            mRecyclerView.smoothScrollToPosition(0);
             locationLiveData.getLocation();
         }
     }
