@@ -9,16 +9,14 @@ import androidx.lifecycle.Transformations;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
-import com.example.eventbritetest.exception.EventdroidException;
 import com.example.eventbritetest.model.persistence.Event;
 import com.example.eventbritetest.model.ui.UIEvent;
 import com.example.eventbritetest.repository.EventRepository;
-import com.example.eventbritetest.utils.AndroidUtils;
+import com.example.eventbritetest.utils.ErrorState;
+import com.example.eventbritetest.utils.LoaderState;
 import com.example.eventbritetest.utils.LocalEventUtils;
 import com.example.eventbritetest.utils.Resource;
 import com.example.eventbritetest.utils.SnackBar;
-import com.example.eventbritetest.utils.State;
-import com.example.eventbritetest.utils.Status;
 
 import java.util.List;
 
@@ -45,7 +43,6 @@ public class MainViewModel extends BaseViewModel {
         LiveData<Resource<List<Event>>> resource =
                 mRepository.getEvents();
         mLiveEvents = Transformations.map(resource, input -> {
-            mLiveLoading.setValue(false);
             mUiEvents = getUIEvents(input.data);
             return mUiEvents;
         });
@@ -53,55 +50,18 @@ public class MainViewModel extends BaseViewModel {
         return mLiveEvents;
     }
 
-    public LiveData<Status> observeStatus() {
-        LiveData<Status> status = mRepository.getStatus();
-        return Transformations.map(status, input -> {
-            if(input.status == State.LOADING) {
-                mLiveLoading.setValue(true);
-            } else {
-                mLiveLoading.setValue(false);
-                if(input.throwable != null) {
-                    input.idResource = AndroidUtils.
-                            stringResourceFactory(input.throwable);
-                    SnackBar snackBar = getSnackBar(input);
-                    mSnackbar.setValue(snackBar);
-                }
-            }
-            return input;
-        });
+    @Override
+    protected LiveData<Boolean> observeLoaderState() {
+        LiveData<LoaderState> status = mRepository.observeLoaderState();
+        mLiveLoading = Transformations.map(status, input -> input.loading);
+        return mLiveLoading;
     }
 
-    private SnackBar getSnackBar(Status input) {
-        if(((EventdroidException)input.throwable).getExceptionType() ==
-                EventdroidException.ExceptionType.EMPTY_DATA ||
-                ((EventdroidException)input.throwable).getExceptionType() ==
-                        EventdroidException.ExceptionType.NO_REMAIN_DATA) {
-            return SnackBar.create(input.idResource, SnackBar.NO_RESOURCE_ID, SnackBar.Action.NONE);
-        }
-        else if(input.wasLoadMore) {
-            return SnackBar.create(input.idResource, R.string.retry, SnackBar.Action.REQUEST_MORE_EVENTS);
-        }
-        else {
-            SnackBar.Action action = getAction(input);
-            return SnackBar.create(input.idResource, R.string.retry,action);
-        }
-
-    }
-
-    private SnackBar.Action getAction(Status input) {
-        EventdroidException.ExceptionType exceptionType =
-                ((EventdroidException)input.throwable).getExceptionType();
-
-        switch (exceptionType) {
-            case PARSING:
-            case NO_NETWORK:
-            case TIME_OUT:
-                return SnackBar.Action.REQUEST_FETCH_EVENTS;
-            case NO_LOCATION_PROVIDED:
-                return SnackBar.Action.REQUEST_LOCATION;
-                default:
-                    return SnackBar.Action.ERROR;
-        }
+    @Override
+    protected LiveData<SnackBar> observeMessageState() {
+        LiveData<ErrorState> error = mRepository.observeErrorState();
+        mSnackbar = Transformations.map(error, input -> getSnackBar(input));
+        return mSnackbar;
     }
 
     public UIEvent getEvent(int position) {
@@ -114,5 +74,26 @@ public class MainViewModel extends BaseViewModel {
 
     private List<UIEvent> getUIEvents(List<Event> events) {
         return LocalEventUtils.toUIEvents(events);
+    }
+
+    @Override
+    protected SnackBar getSnackBar(ErrorState input) {
+        switch (input.error) {
+            case LOCATION:
+                return SnackBar.create(R.string.location_error, R.string.retry, SnackBar.Action.REQUEST_LOCATION);
+            case NETWORK:
+                return SnackBar.create(R.string.network_error, R.string.retry, SnackBar.Action.REQUEST_FETCH_EVENTS);
+            case PARSING:
+                return SnackBar.create(R.string.cannot_process_response, R.string.retry, SnackBar.Action.REQUEST_FETCH_EVENTS);
+            case EMPTY_DATA:
+            case NO_MORE_DATA:
+                return SnackBar.create(R.string.no_remain_data, SnackBar.NO_RESOURCE_ID, SnackBar.Action.NONE);
+            case NO_MORE_DATA_NETWORK:
+                return SnackBar.create(R.string.network_error, R.string.retry, SnackBar.Action.REQUEST_MORE_EVENTS);
+            case NO_MORE_DATA_PARSING:
+                return SnackBar.create(R.string.cannot_process_response, R.string.retry, SnackBar.Action.REQUEST_MORE_EVENTS);
+            default:
+                return SnackBar.create(R.string.unknown_error, SnackBar.NO_RESOURCE_ID, SnackBar.Action.NONE);
+        }
     }
 }

@@ -26,7 +26,7 @@
     <string name="cannot_process_response">No se puede procesar la respuesta.</string>
     <string name="timeout">Se ha agotado el tiempo de espera.</string>
     <string name="no_data_available">No hay datos disponibles.</string>
-    <string name="no_remain_data">Ya no hay más datos.</string>
+    <string name="no_remain_data">Ya no hay más eventos.</string>
     <string name="invalid_location">Ubicación inválida.</string>
 
     <string-array name="unit_option_keys">

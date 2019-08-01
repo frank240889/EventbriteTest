@@ -2,10 +2,12 @@ package com.example.eventbritetest.UI;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.eventbritetest.utils.SnackBar;
 import com.example.eventbritetest.viewmodel.AndroidViewModelFactory;
 
 import javax.inject.Inject;
@@ -48,4 +50,10 @@ public abstract class BaseFragment<V> extends Fragment implements HasSupportFrag
     public AndroidInjector<Fragment> supportFragmentInjector() {
         return fragmentDispatchingAndroidInjector;
     }
+
+    protected abstract void onSnackbarMessage(SnackBar snackBar);
+
+    protected abstract void createSnackbarWithAction(SnackBar snackBar);
+
+    protected abstract View.OnClickListener getOnClickListener(SnackBar snackBar);
 }

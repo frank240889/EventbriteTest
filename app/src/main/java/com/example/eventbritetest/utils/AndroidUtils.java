@@ -4,14 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 
-import androidx.annotation.IntegerRes;
-
-import com.example.eventbritetest.R;
-import com.example.eventbritetest.exception.EventdroidException;
-
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-
 public class AndroidUtils {
 
     public static Drawable getRoundedCornersDrawable(int backgroundColor, Context context) {
@@ -21,46 +13,6 @@ public class AndroidUtils {
         shape.setColor(backgroundColor);
         shape.setCornerRadii(new float[]{pxs,pxs,pxs,pxs,pxs,pxs,pxs,pxs});
         return shape;
-    }
-
-    @IntegerRes
-    public static int stringResourceFactory(Throwable throwable) {
-        @IntegerRes int resourceId;
-        if(throwable instanceof EventdroidException) {
-            EventdroidException eventdroidException = (EventdroidException) throwable;
-            resourceId = getMessage(eventdroidException);
-        }
-        else if(throwable instanceof UnknownHostException || throwable instanceof SocketTimeoutException) {
-            resourceId = R.string.network_error;
-        }
-        else {
-            resourceId = R.string.unknown_error;
-        }
-
-        return resourceId;
-    }
-
-    private static int getMessage(EventdroidException eventdroidException) {
-        EventdroidException.ExceptionType exceptionType = eventdroidException.getExceptionType();
-
-        switch (exceptionType) {
-            case PARSING:
-                return R.string.cannot_process_response;
-            case TIME_OUT:
-                return R.string.timeout;
-            case EMPTY_DATA:
-                return R.string.no_data_available;
-            case NO_REMAIN_DATA:
-                return R.string.no_remain_data;
-            case NO_NETWORK:
-                return R.string.network_error;
-            case INVALID_LOCATION:
-                return R.string.invalid_location;
-            case NO_LOCATION_PROVIDED:
-                return R.string.location_error;
-                default:
-                    return R.string.unknown_error;
-        }
     }
 
     public static float dpToPx(int dp, Context context) {

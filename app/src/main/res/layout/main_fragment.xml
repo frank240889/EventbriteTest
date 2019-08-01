@@ -19,7 +19,7 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
-    <TextView
+    <!--TextView
         android:id="@+id/text_view_general_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,11 +32,12 @@
         app:layout_constraintBottom_toBottomOf="@+id/swipe_refresh_layout_events"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/swipe_refresh_layout_events" />
+        app:layout_constraintTop_toTopOf="@+id/swipe_refresh_layout_events" /-->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout_events"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/bg_rounded"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -7,7 +7,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.eventbritetest.exception.EventdroidException;
 import com.example.eventbritetest.interfaces.AsyncCallback;
 import com.example.eventbritetest.model.network.search.EventbriteEvent;
 import com.example.eventbritetest.model.persistence.Event;
@@ -16,8 +15,11 @@ import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.room.Async;
 import com.example.eventbritetest.persistence.room.EventRoomDatabase;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
+import com.example.eventbritetest.utils.AsyncTaskEventbrite;
 import com.example.eventbritetest.utils.Constants;
+import com.example.eventbritetest.utils.ErrorState;
 import com.example.eventbritetest.utils.EventbriteUtils;
+import com.example.eventbritetest.utils.LoaderState;
 import com.example.eventbritetest.utils.Resource;
 import com.example.eventbritetest.utils.Status;
 
@@ -33,10 +35,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.NO_LOCATION_PROVIDED;
-import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.NO_REMAIN_DATA;
-import static com.example.eventbritetest.exception.EventdroidException.ExceptionType.PARSING;
-
 public class EventRepository {
 
     // The API to consume.
@@ -50,6 +48,9 @@ public class EventRepository {
     private SharedPref mSharedPref;
     private HashMap<String, String> mParams = new HashMap<>();
     private MutableLiveData<Status> mLiveStatus = new MutableLiveData<>();
+
+    private MutableLiveData<LoaderState> mLoaderState = new MutableLiveData<>();
+    private MutableLiveData<ErrorState> mErrorState = new MutableLiveData<>();
 
     private Location mCurrentLocation;
     private DistanceUnit mCurrentDistanceUnit;
@@ -71,7 +72,10 @@ public class EventRepository {
         mSharedPref = sharedPref;
         mLiveResource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
         mMediatorLiveResource.addSource(mLiveResource,
-                events -> mMediatorLiveResource.setValue(Resource.done(events)));
+                events -> {
+                    mMediatorLiveResource.setValue(Resource.ready(events));
+                    mLoaderState.setValue(LoaderState.done());
+                });
 
         mSeekRangeRadius = getCurrentSeekingRangeRadius();
         mCurrentLocation = getCurrentLocation();
@@ -89,9 +93,17 @@ public class EventRepository {
         return mMediatorLiveResource;
     }
 
-    public LiveData<Status> getStatus() {
-        return mLiveStatus;
+    public LiveData<LoaderState> observeLoaderState() {
+        return mLoaderState;
     }
+
+    public LiveData<ErrorState> observeErrorState() {
+        return mErrorState;
+    }
+
+    /*public LiveData<Status> getStatus() {
+        return mLiveStatus;
+    }*/
 
     public void fetchEvents(Location newLocation, boolean loadMore) {
         if(newLocation == null) {
@@ -100,12 +112,14 @@ public class EventRepository {
                 loadMore(mParams);
             }
             else {
-                mLiveStatus.setValue(Status.error(new EventdroidException("Location is null.", NO_LOCATION_PROVIDED)));
+                mLoaderState.setValue(LoaderState.done());
+                mErrorState.setValue(ErrorState.create(ErrorState.Error.LOCATION));
             }
         }
         else {
             if(mFirstRequestLocation) {
                 mSharedPref.putBooleanSync(Constants.FIRST_REQUEST_LOCATION, false);
+                mFirstRequestLocation = false;
             }
 
             mCurrentLocation = newLocation;
@@ -120,7 +134,14 @@ public class EventRepository {
             mParams.put(EventbriteApiService.LOCATION_LATITUDE, String.valueOf(mCurrentLocation.getLatitude()));
             mParams.put(EventbriteApiService.LOCATION_LONGITUDE, String.valueOf(mCurrentLocation.getLongitude()));
 
-            new Async.Count(mEventRoomDatabase.getEventDao()).setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
+            AsyncTaskEventbrite<Void, Void, Integer> asyncCount =
+                    new Async.Count(mEventRoomDatabase.getEventDao()).
+                            setCallback(new AsyncCallback<Void, Void, Integer, Void, Void>() {
+
+                @Override
+                public void onStart(Void start) {
+                    mLoaderState.setValue(LoaderState.loading());
+                }
                 @Override
                 public void onResult(Integer result) {
                     if(result == 0 || distanceUnitHasChanged || seekRangeHasChanged) {
@@ -128,10 +149,18 @@ public class EventRepository {
                         fetchFromRemote(mParams, false);
                     }
                     else {
-                        mLiveStatus.setValue(Status.done());
+                        LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                        mMediatorLiveResource.addSource(resource,
+                                e -> {
+                                    mMediatorLiveResource.setValue(Resource.ready(e));
+                                    mMediatorLiveResource.removeSource(resource);
+                                    mLoaderState.setValue(LoaderState.done());
+                                });
                     }
                 }
-            }).executeOnExecutor(Executors.newCachedThreadPool());
+            }, false);
+
+            asyncCount.executeOnExecutor(Executors.newCachedThreadPool());
         }
     }
 
@@ -144,13 +173,20 @@ public class EventRepository {
           fetchFromRemote(params, true);
         }
         else {
-          mLiveStatus.setValue(Status.error(new EventdroidException("No more data.", NO_REMAIN_DATA)));
-          mLoadingMore = false;
+            LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+            mMediatorLiveResource.addSource(resource,
+                    e -> {
+                        mMediatorLiveResource.setValue(Resource.ready(e));
+                        mMediatorLiveResource.removeSource(resource);
+                        mLoaderState.setValue(LoaderState.done());
+                        mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA));
+                        mLoadingMore = false;
+                    });
         }
     }
 
     private void fetchFromRemote(HashMap<String, String> params, boolean loadMore) {
-        mLiveStatus.setValue(Status.busy());
+        mLoaderState.setValue(LoaderState.loading());
         mEventbriteCall = mApiService.fetchEvents(params);
         mEventbriteCall.enqueue(getCallback(loadMore));
     }
@@ -167,27 +203,28 @@ public class EventRepository {
                             insertMore(events);
                         }
                         else {
-                            mLiveStatus.setValue(Status.error(new EventdroidException("No data.", PARSING)));
                             LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
                             mMediatorLiveResource.addSource(resource,
                                     e -> {
-                                        mMediatorLiveResource.setValue(Resource.done(e));
+                                        mMediatorLiveResource.setValue(Resource.ready(e));
                                         mMediatorLiveResource.removeSource(resource);
+                                        mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_PARSING));
+                                        mLoaderState.setValue(LoaderState.done());
+                                        mLoadingMore = false;
                                     });
                         }
                     }
-
-                    mLoadingMore = false;
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
-                    mLiveStatus.setValue(Status.errorLoadingMore(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
-                    mLoadingMore = false;
                     LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
                     mMediatorLiveResource.addSource(resource,
                             e -> {
-                                mMediatorLiveResource.setValue(Resource.done(e));
+                                mMediatorLiveResource.setValue(Resource.ready(e));
                                 mMediatorLiveResource.removeSource(resource);
+                                mLoaderState.setValue(LoaderState.done());
+                                mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_NETWORK));
+                                mLoadingMore = false;
                             });
                 }
             };
@@ -204,12 +241,26 @@ public class EventRepository {
                         insertNews(events);
                     }
                     else {
-                        mLiveStatus.setValue(Status.error(new EventdroidException("No data.", PARSING)));
+                        LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                        mMediatorLiveResource.addSource(resource,
+                                e -> {
+                                    mMediatorLiveResource.setValue(Resource.ready(e));
+                                    mMediatorLiveResource.removeSource(resource);
+                                    mErrorState.setValue(ErrorState.create(ErrorState.Error.PARSING));
+                                    mLoaderState.setValue(LoaderState.done());
+                                });
                     }
                 }
                 @Override
                 public void onFailure(@NotNull Call<EventbriteEvent> call, @NotNull Throwable t) {
-                    mLiveStatus.setValue(Status.error(new EventdroidException("Network error.", EventdroidException.ExceptionType.NO_NETWORK)));
+                    LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
+                    mMediatorLiveResource.addSource(resource,
+                            e -> {
+                                mMediatorLiveResource.setValue(Resource.ready(e));
+                                mMediatorLiveResource.removeSource(resource);
+                                mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
+                                mLoaderState.setValue(LoaderState.done());
+                            });
                 }
             };
     }
@@ -222,8 +273,10 @@ public class EventRepository {
                 LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
                 mMediatorLiveResource.addSource(resource,
                         e -> {
-                            mMediatorLiveResource.setValue(Resource.done(e));
+                            mMediatorLiveResource.setValue(Resource.ready(e));
                             mMediatorLiveResource.removeSource(resource);
+                            mLoaderState.setValue(LoaderState.done());
+                            mLoadingMore = false;
                         });
             }
             @Override
@@ -241,8 +294,9 @@ public class EventRepository {
                 LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
                 mMediatorLiveResource.addSource(resource,
                         e -> {
-                            mMediatorLiveResource.setValue(Resource.done(e));
+                            mMediatorLiveResource.setValue(Resource.ready(e));
                             mMediatorLiveResource.removeSource(resource);
+                            mLoaderState.setValue(LoaderState.done());
                         });
             }
             @Override

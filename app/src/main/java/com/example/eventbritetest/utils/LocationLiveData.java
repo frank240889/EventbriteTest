@@ -71,7 +71,7 @@ public class LocationLiveData extends LiveData<Location> implements
     @SuppressLint("MissingPermission")
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        getLocation();
+        //getLocation();
         if(hasActiveObservers() &&  mGoogleApiClient.isConnected()) {
             LocationRequest locationRequest = getLocationRequest();
 

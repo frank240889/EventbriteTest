@@ -3,10 +3,12 @@ package com.example.eventbritetest.UI;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import com.example.eventbritetest.R;
+import com.example.eventbritetest.utils.SnackBar;
 import com.example.eventbritetest.viewmodel.AndroidViewModelFactory;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -50,4 +52,12 @@ public abstract class BaseRoundedBottomSheetDialogFragment<V> extends BottomShee
     protected abstract void onLoading(Boolean isLoading);
 
     public abstract V getViewModel();
+
+    protected void onSnackbarMessage(SnackBar snackBar){};
+
+    protected void createSnackbarWithAction(SnackBar snackBar){};
+
+    protected View.OnClickListener getOnClickListener(SnackBar snackBar){
+        return null;
+    };
 }

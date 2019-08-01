@@ -40,6 +40,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
+import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
+
 public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
     private static final String DOMINANT_COLOR = "dominant_color";
@@ -84,7 +86,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel.observeLoadingState().observe(this, this::onLoading);
+        mViewModel.observeLoaderState().observe(this, this::onLoading);
         mViewModel.observeTitle().observe(this, this::onTitleFetched);
         mViewModel.observeOrganizer().observe(this, this::onOrganizerFetched);
         mViewModel.observeLogo().observe(this, this::onLogoUrlFetched);
@@ -92,7 +94,6 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         mViewModel.observeDate().observe(this, this::onDateFetched);
         mViewModel.observeAddress().observe(this, this::onAddressFetched);
         mViewModel.observeUrl().observe(this, this::onUrlFetched);
-        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
         mViewModel.fetchEvent(EventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
     }
 
@@ -228,14 +229,36 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         //mTextViewUrl.setText(s);
     }
 
-    private void onSnackbarMessage(SnackBar snackBar) {
-        if(snackBar.getAction() == SnackBar.Action.REQUEST_EVENT_DETAIL) {
-            Snackbar snackbar = RoundedSnackbar.make(mContainerTitle,
-                    R.string.error_fetching_event, Snackbar.LENGTH_INDEFINITE);
-
-            snackbar.setAction(snackBar.getActionResourceId(), v ->
-                    mViewModel.fetchEvent(getArguments().getString(EventbriteApiService.EVENT_ID)));
-            snackbar.show();
+    @Override
+    protected void onSnackbarMessage(SnackBar snackBar) {
+        if(snackBar.getAction() == NONE) {
+            RoundedSnackbar.make(mLoadingProgressBar, snackBar.getMessageResourceId(), Snackbar.LENGTH_SHORT).show();
         }
+        else {
+            createSnackbarWithAction(snackBar);
+        }
+    }
+
+    @Override
+    protected void createSnackbarWithAction(SnackBar snackBar) {
+        Snackbar snackbar = RoundedSnackbar.make(mLoadingProgressBar, snackBar.getMessageResourceId(), Snackbar.LENGTH_INDEFINITE);
+        View.OnClickListener onClickListener = getOnClickListener(snackBar);
+        snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
+        snackbar.show();
+    }
+
+    @Override
+    protected View.OnClickListener getOnClickListener(SnackBar snackBar) {
+
+        switch (snackBar.getAction()) {
+            case REQUEST_EVENT_DETAIL:
+                return new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mViewModel.fetchEvent(getArguments().getString(EventbriteApiService.EVENT_ID));
+                    }
+                };
+        }
+        return null;
     }
 }

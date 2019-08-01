@@ -9,10 +9,11 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
-import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.network.DistanceUnit;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
+import com.example.eventbritetest.utils.Constants;
+import com.example.eventbritetest.utils.SnackBar;
 
 import java.util.List;
 
@@ -178,5 +179,15 @@ public class SettingsViewModel extends BaseViewModel {
         }
 
         return units;
+    }
+
+    @Override
+    protected LiveData<Boolean> observeLoaderState() {
+        return null;
+    }
+
+    @Override
+    protected LiveData<SnackBar> observeMessageState() {
+        return null;
     }
 }

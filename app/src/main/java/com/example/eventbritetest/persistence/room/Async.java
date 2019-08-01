@@ -177,6 +177,8 @@ public class Async {
 
     public static class Count extends AsyncTaskEventbrite<Void, Void, Integer>{
         private WeakReference<AsyncCallback<Void, Void, Integer, Void, Void>> mAsyncCallback;
+        private AsyncCallback<Void, Void, Integer, Void, Void> mCallback;
+        private boolean mUseWeakReference;
         private EventDao mEventDao;
 
         public Count() {}
@@ -184,8 +186,12 @@ public class Async {
             mEventDao = eventDao;
         }
 
-        public AsyncTaskEventbrite<Void,Void, Integer> setCallback(AsyncCallback<Void, Void, Integer, Void, Void> callback) {
-            mAsyncCallback = new WeakReference<>(callback);
+        public AsyncTaskEventbrite<Void,Void, Integer> setCallback(AsyncCallback<Void, Void, Integer, Void, Void> callback, boolean useWeakReference) {
+            mUseWeakReference = useWeakReference;
+            if(useWeakReference)
+                mAsyncCallback = new WeakReference<>(callback);
+            else
+                mCallback = callback;
             return this;
         }
 
@@ -216,16 +222,27 @@ public class Async {
 
         @Override
         protected AsyncCallback<Void, Void, Integer, Void, Void> getCallback() {
-            if(mAsyncCallback != null && mAsyncCallback.get() != null)
-                return mAsyncCallback.get();
+            if(mUseWeakReference) {
+                if(mAsyncCallback != null && mAsyncCallback.get() != null)
+                    return mAsyncCallback.get();
+            }
+            else {
+                if(mCallback != null)
+                    return mCallback;
+            }
             return null;
         }
 
         @Override
         protected void clear() {
-            if(getCallback() != null)
-                mAsyncCallback.clear();
-            mAsyncCallback = null;
+            if(mUseWeakReference) {
+                if(getCallback() != null)
+                    mAsyncCallback.clear();
+                mAsyncCallback = null;
+            }
+            else {
+                mCallback = null;
+            }
         }
     }
 }
