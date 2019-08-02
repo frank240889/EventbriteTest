@@ -223,7 +223,8 @@ public class EventRepository {
                                 mMediatorLiveResource.setValue(Resource.ready(e));
                                 mMediatorLiveResource.removeSource(resource);
                                 mLoaderState.setValue(LoaderState.done());
-                                mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_NETWORK));
+                                if(!call.isCanceled())
+                                    mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_NETWORK));
                                 mLoadingMore = false;
                             });
                 }
@@ -258,7 +259,8 @@ public class EventRepository {
                             e -> {
                                 mMediatorLiveResource.setValue(Resource.ready(e));
                                 mMediatorLiveResource.removeSource(resource);
-                                mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
+                                if(!call.isCanceled())
+                                    mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
                                 mLoaderState.setValue(LoaderState.done());
                             });
                 }
@@ -308,10 +310,6 @@ public class EventRepository {
         }).executeOnExecutor(Executors.newCachedThreadPool(), events);
     }
 
-    private DistanceUnit getCurrentDistanceUnit() {
-        return DistanceUnit.getUnit(mSharedPref.getString(Constants.DISTANCE_UNIT));
-    }
-
     private int getCurrentSeekingRangeRadius() {
         int storeRadiusRange = mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
         return storeRadiusRange == -1 ? 10: storeRadiusRange;
@@ -347,6 +345,10 @@ public class EventRepository {
         savedLocation.setLatitude(latitude);
         savedLocation.setLongitude(longitude);
         return savedLocation;
+    }
+
+    private DistanceUnit getCurrentDistanceUnit() {
+        return DistanceUnit.getUnit(mSharedPref.getString(Constants.DISTANCE_UNIT));
     }
 
     private String currentSeekRangeRadius() {
@@ -401,4 +403,10 @@ public class EventRepository {
         return distanceUnitHasChanged;
     }
 
+    public void cancelFetching() {
+        if(mEventbriteCall != null && !mEventbriteCall.isCanceled()) {
+            mEventbriteCall.cancel();
+        }
+        mEventbriteCall = null;
+    }
 }

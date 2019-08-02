@@ -27,7 +27,6 @@ import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseFragment;
 import com.example.eventbritetest.UI.eventdetail.EventDetailFragment;
 import com.example.eventbritetest.UI.settings.SettingsFragment;
-import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
 import com.example.eventbritetest.utils.RoundedSnackbar;
@@ -46,15 +45,10 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     private Toolbar mToolbar;
     private ActionBar mActionBar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
-    //private TextView mGeneralMessage;
     private FrameLayout mBlockingInteractionLayout;
     private boolean mLoadingMore = false;
-
     @Inject
     LocationLiveData locationLiveData;
-
-    @Inject
-    SharedPref sharedPref;
 
     public MainFragment(){}
 
@@ -80,7 +74,16 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         mViewModel.observeMessageState().observe(this, this::onSnackbarMessage);
         mViewModel.observeEvents().observe(this, uiEvents -> {
             mEventAdapter.onChanged(uiEvents);
-            String title = String.format(getString(R.string.title_main_toolbar), uiEvents.size());
+            String idResource;
+            if(uiEvents.size() == 1) {
+                idResource = getString(R.string.event_number_message);
+            }
+            else {
+                idResource = getString(R.string.events_number_message);
+            }
+            String title = String.format(idResource,
+                    uiEvents.size(), mViewModel.currentSeekRangeRadius());
+
             mActionBar.setTitle(title);
         });
         setHasOptionsMenu(true);
@@ -98,7 +101,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         mRecyclerView = view.findViewById(R.id.list_events);
         mToolbar = view.findViewById(R.id.main_toolbar);
         mToolbar.setTitleTextColor(Color.WHITE);
-        //mGeneralMessage = view.findViewById(R.id.text_view_general_message);
         mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_events);
         mBlockingInteractionLayout = view.findViewById(R.id.blocking_layout);
         mRecyclerView.setHasFixedSize(true);
@@ -123,7 +125,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                 if(dy > 0) {
                     int totalItemCount = recyclerView.getLayoutManager().getItemCount();
                     int lastVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-                    if (totalItemCount <= (lastVisibleItem + 1) && !mLoadingMore) {
+                    if (!mLoadingMore && totalItemCount <= (lastVisibleItem +1) && totalItemCount > 1) {
                         mViewModel.fetchEvents(null, true);
                     }
                 }
@@ -183,7 +185,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     protected void onLoading(Boolean isLoading) {
         mLoadingMore = isLoading;
         mSwipeRefreshLayout.setRefreshing(isLoading);
-        mBlockingInteractionLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        //mBlockingInteractionLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         if (isLoading) {
             mToolbar.setTitle(R.string.searching_near_events);
         }
@@ -197,11 +199,9 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == Permission.LOCATION.ordinal()) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //mGeneralMessage.setVisibility(View.GONE);
                 locationLiveData.observe(this, this::onLocationChanged);
             }
             else {
-                //mGeneralMessage.setVisibility(View.VISIBLE);
                 mSwipeRefreshLayout.setRefreshing(false);
                 onSnackbarMessage(SnackBar.create(R.string.location_error,R.string.retry, REQUEST_LOCATION_PERMISSION));
             }
@@ -257,7 +257,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Permission.LOCATION.ordinal());
         }
         else {
-            mRecyclerView.smoothScrollToPosition(0);
+            mRecyclerView.scrollToPosition(0);
             locationLiveData.getLocation();
         }
     }

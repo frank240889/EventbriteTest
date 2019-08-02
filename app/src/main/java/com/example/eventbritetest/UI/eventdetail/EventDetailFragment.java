@@ -87,6 +87,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel.observeLoaderState().observe(this, this::onLoading);
+        mViewModel.observeMessageState().observe(this, this::onSnackbarMessage);
         mViewModel.observeTitle().observe(this, this::onTitleFetched);
         mViewModel.observeOrganizer().observe(this, this::onOrganizerFetched);
         mViewModel.observeLogo().observe(this, this::onLogoUrlFetched);

@@ -66,5 +66,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/swipe_refresh_layout_events"
+        android:visibility="gone"
         tools:ignore="KeyboardInaccessibleWidget" />
 </androidx.constraintlayout.widget.ConstraintLayout>

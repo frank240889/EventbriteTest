@@ -3,6 +3,7 @@ package com.example.eventbritetest.UI.eventdetail;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
@@ -146,7 +147,12 @@ public class EventDetailViewModel extends BaseViewModel {
 
     @Override
     protected LiveData<SnackBar> observeMessageState() {
-        mSnackbar = Transformations.map(errorStateMutableLiveData, input -> getSnackBar(input));
+        mSnackbar = Transformations.map(errorStateMutableLiveData, new Function<ErrorState, SnackBar>() {
+            @Override
+            public SnackBar apply(ErrorState input) {
+                return EventDetailViewModel.this.getSnackBar(input);
+            }
+        });
         return mSnackbar;
     }
 

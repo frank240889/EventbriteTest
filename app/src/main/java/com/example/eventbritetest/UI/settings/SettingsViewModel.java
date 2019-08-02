@@ -96,7 +96,7 @@ public class SettingsViewModel extends BaseViewModel {
         try {
             int newRange = Integer.parseInt(mNewRange);
 
-            if((newRange != mCurrentRange) &&(9 < newRange && newRange < 101)) {
+            if((newRange != mCurrentRange) &&(0 < newRange && newRange < 101)) {
                 mSharedPref.putInt(EventbriteApiService.LOCATION_WITHIN, newRange);
                 change = true;
             }
@@ -171,8 +171,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     private int getCurrentRange() {
-        return mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN) < 9 ?
-                10 : mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
+        return mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN) == -1 ?
+                1 : mSharedPref.getInt(EventbriteApiService.LOCATION_WITHIN);
     }
 
     private List<DistanceUnit.Unit> buildUnitList() {

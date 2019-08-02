@@ -30,9 +30,9 @@ public class NetworkModule {
     @Singleton
     OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor) {
         return new OkHttpClient.Builder().
-                readTimeout(30, TimeUnit.SECONDS).
-                writeTimeout(30, TimeUnit.SECONDS).
-                connectTimeout(30, TimeUnit.SECONDS).
+                readTimeout(10, TimeUnit.SECONDS).
+                writeTimeout(10, TimeUnit.SECONDS).
+                connectTimeout(10, TimeUnit.SECONDS).
                 addInterceptor(interceptor).
                 build();
     }
