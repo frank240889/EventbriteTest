@@ -146,7 +146,7 @@ public class EventDetailViewModel extends BaseViewModel {
     }
 
     @Override
-    protected LiveData<SnackBar> observeMessageState() {
+    protected LiveData<SnackBar> observeSnackbarMessage() {
         mSnackbar = Transformations.map(errorStateMutableLiveData, new Function<ErrorState, SnackBar>() {
             @Override
             public SnackBar apply(ErrorState input) {

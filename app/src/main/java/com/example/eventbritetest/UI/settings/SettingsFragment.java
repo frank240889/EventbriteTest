@@ -71,7 +71,7 @@ public class SettingsFragment extends BaseRoundedBottomSheetDialogFragment<Setti
         });
         mViewModel.observeCurrentRange().observe(this, this::onRangeRead);
         mViewModel.observeUnitList().observe(this, mOptionUnitAdapter);
-        mViewModel.observeMessageState().observe(this, this::onSnackbarMessage);
+        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
         mViewModel.observeSettingChanges().observe(this, this::onSettingsChange);
     }
 

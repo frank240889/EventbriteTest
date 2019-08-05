@@ -132,6 +132,9 @@ public class Event {
     @SerializedName("is_externally_ticketed")
     @Expose
     private Boolean isExternallyTicketed;
+    @SerializedName("category")
+    @Expose
+    private Category category;
     @SerializedName("logo")
     @Expose
     private Logo logo;
@@ -470,6 +473,14 @@ public class Event {
 
     public void setIsExternallyTicketed(Boolean isExternallyTicketed) {
         this.isExternallyTicketed = isExternallyTicketed;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public Logo getLogo() {

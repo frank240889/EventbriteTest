@@ -4,6 +4,7 @@ import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.room.EventRoomDatabase;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.repository.EventRepository;
+import com.example.eventbritetest.utils.ContextUtils;
 
 import javax.inject.Singleton;
 
@@ -21,8 +22,9 @@ public class RepositoryModule {
     @Provides
     public EventRepository providesEventRepository(EventbriteApiService apiService,
                                                    EventRoomDatabase eventRoomDatabase,
-                                                   SharedPref sharedPref) {
-        return new EventRepository(apiService, eventRoomDatabase, sharedPref);
+                                                   SharedPref sharedPref,
+                                                   ContextUtils contextUtils) {
+        return new EventRepository(apiService, eventRoomDatabase, sharedPref, contextUtils);
 
     }
 }

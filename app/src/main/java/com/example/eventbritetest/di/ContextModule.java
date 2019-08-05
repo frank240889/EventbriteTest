@@ -1,22 +1,20 @@
 package com.example.eventbritetest.di;
 
 import android.app.Application;
-import android.content.Context;
+
+import com.example.eventbritetest.utils.ContextUtils;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 
-/**
- * The module that provides the context.
- */
 @Module
-public class ApplicationModule {
+public class ContextModule {
 
     @Singleton
     @Provides
-    Context provideContext(Application application) {
-        return application;
+    ContextUtils provideContextUtils(Application application) {
+        return ContextUtils.init(application);
     }
 }

@@ -56,4 +56,6 @@ public abstract class BaseFragment<V> extends Fragment implements HasSupportFrag
     protected abstract void createSnackbarWithAction(SnackBar snackBar);
 
     protected abstract View.OnClickListener getOnClickListener(SnackBar snackBar);
+
+    protected void onNotificationMessage(String message) {}
 }

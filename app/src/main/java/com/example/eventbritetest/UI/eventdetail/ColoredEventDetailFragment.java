@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,8 @@ import com.bumptech.glide.request.target.Target;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
+import com.example.eventbritetest.utils.AndroidUtils;
+import com.example.eventbritetest.utils.ColorUtils;
 import com.example.eventbritetest.utils.ContextUtils;
 import com.example.eventbritetest.utils.GlideApp;
 import com.example.eventbritetest.utils.RoundedSnackbar;
@@ -42,7 +45,7 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
 
-public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
+public class ColoredEventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
     private static final String DOMINANT_COLOR = "dominant_color";
     private TextView mTextViewTitle;
@@ -54,16 +57,17 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     private ImageView mImageViewLogo;
     private ProgressBar mLoadingProgressBar;
     private int mDominantColor;
+    private int mInvertedDominantColor;
     private LinearLayout mContainerTitle;
     private View mSeparator;
 
     @Inject
     ContextUtils contextUtils;
 
-    public EventDetailFragment() {}
+    public ColoredEventDetailFragment() {}
 
-    public static EventDetailFragment newInstance(String idEvent, int color) {
-        EventDetailFragment eventDetailFragment = new EventDetailFragment();
+    public static ColoredEventDetailFragment newInstance(String idEvent, int color) {
+        ColoredEventDetailFragment eventDetailFragment = new ColoredEventDetailFragment();
         Bundle bundle = new Bundle();
         bundle.putString(EventbriteApiService.EVENT_ID, idEvent);
         bundle.putInt(DOMINANT_COLOR, color);
@@ -77,6 +81,12 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         mDominantColor = getArguments().getInt(DOMINANT_COLOR) == 0 ?
                 ContextCompat.getColor(context,
                         R.color.colorPrimary) : getArguments().getInt(DOMINANT_COLOR);
+        if(mDominantColor == ContextCompat.getColor(context,
+                R.color.colorPrimary))
+            mInvertedDominantColor = ContextCompat.getColor(context,
+                    R.color.white_overlay);
+        else
+            mInvertedDominantColor = ColorUtils.invertColor(mDominantColor);
     }
 
     @Override
@@ -91,7 +101,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         mViewModel.observeDate().observe(this, this::onDateFetched);
         mViewModel.observeAddress().observe(this, this::onAddressFetched);
         mViewModel.observeUrl().observe(this, this::onUrlFetched);
-        mViewModel.fetchEvent(EventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
+        mViewModel.fetchEvent(ColoredEventDetailFragment.this.getArguments().getString(EventbriteApiService.EVENT_ID));
     }
 
     @Override
@@ -124,6 +134,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
         dialog.setOnShowListener(d -> {
             FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            bottomSheet.setBackground(AndroidUtils.getRoundedCornersDrawable(mDominantColor, getActivity()));
             BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             bottomSheetBehavior.setSkipCollapsed(true);
@@ -133,8 +144,15 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     }
 
     private void setColor(){
-        mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
-        mSeparator.setBackgroundColor(mDominantColor);
+        mTextViewTitle.setTextColor(mInvertedDominantColor);
+        mTextViewOrganizer.setTextColor(mInvertedDominantColor);
+        mTextViewDescription.setTextColor(mInvertedDominantColor);
+        mTextViewDate.setTextColor(mInvertedDominantColor);
+        mTextViewDate.getCompoundDrawablesRelative()[0].setColorFilter(mInvertedDominantColor, PorterDuff.Mode.SRC_ATOP);
+        mTextViewAddress.setTextColor(mInvertedDominantColor);
+        mTextViewAddress.getCompoundDrawablesRelative()[0].setColorFilter(mInvertedDominantColor, PorterDuff.Mode.SRC_IN);
+        mSeparator.setBackgroundColor(mInvertedDominantColor);
+        mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mInvertedDominantColor));
     }
 
     @Override
@@ -175,12 +193,22 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
                                                    boolean isFirstResource) {
 
                         mImageViewLogo.setImageDrawable(null);
-
                         if(mDominantColor == ContextCompat.getColor(getContext(),
                                 R.color.colorPrimary) && resource != null) {
+
                             Palette p = Palette.from(resource).generate();
                             mDominantColor = p.getDominantColor(ContextCompat.getColor(getContext(),
                                     R.color.colorPrimary));
+
+                            mInvertedDominantColor = ContextCompat.getColor(getContext(),
+                                    R.color.white_overlay);
+
+                            setColor();
+                            FrameLayout bottomSheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                            bottomSheet.setBackground(AndroidUtils.getRoundedCornersDrawable(mDominantColor, getActivity()));
+                            BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                            bottomSheetBehavior.setSkipCollapsed(true);
                             getDialog().getWindow().setNavigationBarColor(mDominantColor);
                         }
                         return false;
@@ -226,7 +254,8 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         snackbar.show();
     }
 
-    @Override protected View.OnClickListener getOnClickListener(SnackBar snackBar) {
+    @Override
+    protected View.OnClickListener getOnClickListener(SnackBar snackBar) {
 
         switch (snackBar.getAction()) {
             case REQUEST_EVENT_DETAIL:

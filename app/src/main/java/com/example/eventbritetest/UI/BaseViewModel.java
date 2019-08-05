@@ -12,7 +12,7 @@ import com.example.eventbritetest.utils.SnackBar;
 
 public abstract class BaseViewModel extends AndroidViewModel {
     protected LiveData<Boolean> mLiveLoading;
-    protected MutableLiveData<Integer> mLiveOnMessage = new MutableLiveData<>();
+    protected MutableLiveData<String> mLiveOnMessage = new MutableLiveData<>();
     protected LiveData<SnackBar> mSnackbar;
 
     public BaseViewModel(@NonNull Application application) {
@@ -20,7 +20,7 @@ public abstract class BaseViewModel extends AndroidViewModel {
         mLiveLoading = new MutableLiveData<>();
     }
 
-    public LiveData<Integer> observeNotificationMessage() {
+    public LiveData<String> observeNotificationMessage() {
         return mLiveOnMessage;
     }
 
@@ -28,7 +28,7 @@ public abstract class BaseViewModel extends AndroidViewModel {
         return mLiveLoading;
     }
 
-    protected LiveData<SnackBar> observeMessageState() {
+    protected LiveData<SnackBar> observeSnackbarMessage() {
         return mSnackbar;
     }
 

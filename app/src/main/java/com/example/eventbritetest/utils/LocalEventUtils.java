@@ -29,7 +29,9 @@ public class LocalEventUtils {
                 event.getId(),
                 event.getName(),
                 event.getDescription(),
-                event.getUrlPreview()
+                event.getUrlPreview(),
+                event.getCategory(),
+                event.getCategoryId()
         );
     }
 

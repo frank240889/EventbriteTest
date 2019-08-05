@@ -71,7 +71,7 @@ public class EventAdapter extends BaseAdapter<UIEvent,EventHolder> {
         holder.textViewEventSummary.setText(uiEvent.getName().isEmpty() ?
                 holder.itemView.getContext().getString(R.string.title_not_available) :
                 uiEvent.getName());
-
+        holder.textViewEventCategory.setText(uiEvent.getCategory());
         if(!uiEvent.getUrlPreview().equals("")) {
             loadLogo(uiEvent, holder);
         }

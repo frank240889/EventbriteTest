@@ -101,12 +101,12 @@ public class SettingsViewModel extends BaseViewModel {
                 change = true;
             }
             else {
-                mLiveOnMessage.setValue(R.string.invalid_range);
+                mLiveOnMessage.setValue(getApplication().getString(R.string.invalid_range));
                 change = false;
             }
         }
         catch (NumberFormatException e) {
-            mLiveOnMessage.setValue(R.string.invalid_range);
+            mLiveOnMessage.setValue(getApplication().getString(R.string.invalid_range));
             change = false;
         }
 
@@ -193,7 +193,7 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     @Override
-    protected LiveData<SnackBar> observeMessageState() {
+    protected LiveData<SnackBar> observeSnackbarMessage() {
         mSnackbar = Transformations.map(errorStateMutableLiveData, input -> getSnackBar(input));
         return mSnackbar;
     }

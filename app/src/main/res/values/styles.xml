@@ -18,9 +18,9 @@
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 
-    <style name="Button.PrimaryDarkColor" parent="Widget.AppCompat.Button.Colored">
+    <style name="RoundedButton.ColorAccent" parent="Widget.AppCompat.Button.Colored">
         <item name="android:textColor">@color/white_overlay</item>
-        <item name="android:backgroundTint">@color/colorPrimaryDark</item>
+        <item name="android:backgroundTint">@color/colorAccent</item>
     </style>
 
     <style name="Button.ColorAccent" parent="Widget.AppCompat.Button.Colored">

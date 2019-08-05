@@ -22,11 +22,12 @@ public interface EventbriteApiService {
     double DEFAULT_LONGITUDE = -99.133209;
     String CURRENT_PAGE = "page";
     String TOTAL_PAGES = "total_pages";
+    String EXPAND = "expand";
 
 
     @GET("v3/events/search/")
     @Headers(BuildConfig.O_AUTH_TOKEN)
-    Call<EventbriteEvent> fetchEvents(@QueryMap HashMap<String, String> params);
+    Call<EventbriteEvent> fetchEvents(@QueryMap(encoded = true) HashMap<String, String> params);
 
     @GET("v3/events/{event_id}")
     @Headers(BuildConfig.O_AUTH_TOKEN)

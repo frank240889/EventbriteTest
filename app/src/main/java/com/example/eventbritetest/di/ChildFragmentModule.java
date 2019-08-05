@@ -1,5 +1,6 @@
 package com.example.eventbritetest.di;
 
+import com.example.eventbritetest.UI.eventdetail.ColoredEventDetailFragment;
 import com.example.eventbritetest.UI.eventdetail.EventDetailFragment;
 import com.example.eventbritetest.UI.settings.SettingsFragment;
 
@@ -14,4 +15,7 @@ public abstract class ChildFragmentModule {
 
     @ContributesAndroidInjector(modules = FragmentModule.class)
     abstract EventDetailFragment contributeEventDetailFragment();
+
+    @ContributesAndroidInjector(modules = FragmentModule.class)
+    abstract ColoredEventDetailFragment contributeColoredEventDetailFragment();
 }

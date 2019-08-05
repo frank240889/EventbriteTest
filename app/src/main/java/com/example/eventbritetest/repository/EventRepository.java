@@ -17,6 +17,7 @@ import com.example.eventbritetest.persistence.room.EventRoomDatabase;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.AsyncTaskEventbrite;
 import com.example.eventbritetest.utils.Constants;
+import com.example.eventbritetest.utils.ContextUtils;
 import com.example.eventbritetest.utils.ErrorState;
 import com.example.eventbritetest.utils.EventbriteUtils;
 import com.example.eventbritetest.utils.LoaderState;
@@ -61,15 +62,17 @@ public class EventRepository {
     private int mTotalPages;
     private boolean mLoadingMore = false;
     private boolean mFirstRequestLocation;
+    ContextUtils contextUtils;
 
     @Inject
     public EventRepository(EventbriteApiService apiService,
                            EventRoomDatabase eventRoomDatabase,
-                           SharedPref sharedPref) {
-
+                           SharedPref sharedPref,
+                           ContextUtils contextUtils) {
         mApiService = apiService;
         mEventRoomDatabase = eventRoomDatabase;
         mSharedPref = sharedPref;
+        this.contextUtils = contextUtils;
         mLiveResource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
         mMediatorLiveResource.addSource(mLiveResource,
                 events -> {
@@ -101,20 +104,10 @@ public class EventRepository {
         return mErrorState;
     }
 
-    /*public LiveData<Status> getStatus() {
-        return mLiveStatus;
-    }*/
-
-    public void fetchEvents(Location newLocation, boolean loadMore) {
+    public void fetchEvents(Location newLocation) {
         if(newLocation == null) {
-            if(loadMore) {
-                mParams.put(EventbriteApiService.CURRENT_PAGE, String.valueOf(mCurrentPage + 1));
-                loadMore(mParams);
-            }
-            else {
-                mLoaderState.setValue(LoaderState.done());
-                mErrorState.setValue(ErrorState.create(ErrorState.Error.LOCATION));
-            }
+            mLoaderState.setValue(LoaderState.done());
+            mErrorState.setValue(ErrorState.create(ErrorState.Error.LOCATION));
         }
         else {
             if(mFirstRequestLocation) {
@@ -164,13 +157,14 @@ public class EventRepository {
         }
     }
 
-    private void loadMore(HashMap<String, String> params) {
+    public void fetchMoreEvents() {
         if(mLoadingMore)
             return;
 
-        mLoadingMore = true;
+        mParams.put(EventbriteApiService.CURRENT_PAGE, String.valueOf(mCurrentPage + 1));
         if(mCurrentPage < (mTotalPages + 1)) {
-          fetchFromRemote(params, true);
+            mLoadingMore = true;
+            fetchFromRemote(mParams, true);
         }
         else {
             LiveData<List<Event>> resource = mEventRoomDatabase.getEventDao().getAllEventsAsync();
@@ -187,6 +181,7 @@ public class EventRepository {
 
     private void fetchFromRemote(HashMap<String, String> params, boolean loadMore) {
         mLoaderState.setValue(LoaderState.loading());
+        params.put(EventbriteApiService.EXPAND, "venue,category");
         mEventbriteCall = mApiService.fetchEvents(params);
         mEventbriteCall.enqueue(getCallback(loadMore));
     }
@@ -199,7 +194,7 @@ public class EventRepository {
                     List<Event> events;
                     if(response.isSuccessful()) {
                         if(response.body() != null && response.body().getEvents() != null) {
-                            events = EventbriteUtils.toPersistenceEvents(response.body());
+                            events = EventbriteUtils.toPersistenceEvents(response.body(), contextUtils);
                             insertMore(events);
                         }
                         else {
@@ -236,7 +231,7 @@ public class EventRepository {
                 public void onResponse(@NotNull Call<EventbriteEvent> call, @NotNull Response<EventbriteEvent> response) {
                     List<Event> events;
                     if(response.body() != null && response.body().getEvents() != null) {
-                        events = EventbriteUtils.toPersistenceEvents(response.body());
+                        events = EventbriteUtils.toPersistenceEvents(response.body(), contextUtils);
                         mTotalPages = response.body().getPagination().getPageCount();
                         mSharedPref.putIntSync(EventbriteApiService.TOTAL_PAGES, mTotalPages);
                         insertNews(events);

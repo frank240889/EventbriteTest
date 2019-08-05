@@ -26,6 +26,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseFragment;
 import com.example.eventbritetest.UI.eventdetail.EventDetailFragment;
+import com.example.eventbritetest.UI.help.HelpFragment;
 import com.example.eventbritetest.UI.settings.SettingsFragment;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
@@ -71,21 +72,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         });
 
         mViewModel.observeLoaderState().observe(this, this::onLoading);
-        mViewModel.observeMessageState().observe(this, this::onSnackbarMessage);
-        mViewModel.observeEvents().observe(this, uiEvents -> {
-            mEventAdapter.onChanged(uiEvents);
-            String idResource;
-            if(uiEvents.size() == 1) {
-                idResource = getString(R.string.event_number_message);
-            }
-            else {
-                idResource = getString(R.string.events_number_message);
-            }
-            String title = String.format(idResource,
-                    uiEvents.size(), mViewModel.currentSeekRangeRadius());
-
-            mActionBar.setTitle(title);
-        });
+        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
+        mViewModel.observeEvents().observe(this, mEventAdapter);
         setHasOptionsMenu(true);
         fetchOrRequestPermissions();
     }
@@ -126,7 +114,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                     int totalItemCount = recyclerView.getLayoutManager().getItemCount();
                     int lastVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
                     if (!mLoadingMore && totalItemCount <= (lastVisibleItem +1) && totalItemCount > 1) {
-                        mViewModel.fetchEvents(null, true);
+                        mViewModel.fetchMoreEvents();
                     }
                 }
             }
@@ -140,6 +128,8 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         super.onActivityCreated(savedInstanceState);
         ((MainActivity)getActivity()).setSupportActionBar(mToolbar);
         mActionBar = ((MainActivity)getActivity()).getSupportActionBar();
+        if(mActionBar != null)
+            mActionBar.setTitle(R.string.near_events);
     }
 
     @Override
@@ -155,7 +145,15 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         if(id == R.id.settings_item){
             showSettings();
         }
+        else if(id == R.id.help_item) {
+            showHelp();
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showHelp() {
+        HelpFragment helpFragment = HelpFragment.newInstance();
+        helpFragment.show(getChildFragmentManager(), HelpFragment.class.getName());
     }
 
     private void showSettings() {
@@ -185,14 +183,16 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
     protected void onLoading(Boolean isLoading) {
         mLoadingMore = isLoading;
         mSwipeRefreshLayout.setRefreshing(isLoading);
-        //mBlockingInteractionLayout.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         if (isLoading) {
             mToolbar.setTitle(R.string.searching_near_events);
+        }
+        else {
+            mToolbar.setTitle(R.string.near_events);
         }
     }
 
     private void onLocationChanged(Location location) {
-        mViewModel.fetchEvents(location, false);
+        mViewModel.fetchEvents(location);
     }
 
     @Override
@@ -238,7 +238,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
                         Permission.LOCATION.ordinal()
                 );
             case REQUEST_MORE_EVENTS:
-                return v -> mViewModel.fetchEvents(null, true);
+                return v -> mViewModel.fetchMoreEvents();
         }
         return null;
     }

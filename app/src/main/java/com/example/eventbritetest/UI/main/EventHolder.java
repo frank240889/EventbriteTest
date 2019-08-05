@@ -15,6 +15,7 @@ public class EventHolder extends BaseHolder {
     Button buttonEventDetails;
     ImageView imageViewEventPreview;
     TextView textViewEventSummary;
+    TextView textViewEventCategory;
 
     public EventHolder(@NonNull View itemView, OnItemClick onItemClick) {
         super(itemView, onItemClick);
@@ -22,5 +23,6 @@ public class EventHolder extends BaseHolder {
         buttonEventDetails.setOnClickListener(this);
         imageViewEventPreview = itemView.findViewById(R.id.event_preview);
         textViewEventSummary = itemView.findViewById(R.id.event_summary);
+        textViewEventCategory = itemView.findViewById(R.id.category);
     }
 }

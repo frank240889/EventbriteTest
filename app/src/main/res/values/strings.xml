@@ -27,11 +27,62 @@
     <string name="cannot_process_response">No se puede procesar la respuesta.</string>
     <string name="timeout">Se ha agotado el tiempo de espera.</string>
     <string name="no_data_available">No hay datos disponibles.</string>
-    <string name="no_remain_data">Ya no hay más eventos.</string>
+    <string name="no_remain_data">No hay más eventos.</string>
     <string name="invalid_location">Ubicación inválida.</string>
+    <string name="near_events">Eventos cercanos</string>
+    <string name="help">Ayuda</string>
+    <string name="accept">Aceptar</string>
 
     <string-array name="unit_option_keys">
         <item>Km</item>
         <item>Mi</item>
+    </string-array>
+
+    <string-array name="id_categories">
+        <item>103</item>
+        <item>101</item>
+        <item>110</item>
+        <item>113</item>
+        <item>105</item>
+        <item>104</item>
+        <item>108</item>
+        <item>107</item>
+        <item>102</item>
+        <item>109</item>
+        <item>111</item>
+        <item>114</item>
+        <item>115</item>
+        <item>116</item>
+        <item>112</item>
+        <item>106</item>
+        <item>117</item>
+        <item>118</item>
+        <item>119</item>
+        <item>199</item>
+        <item>120</item>
+    </string-array>
+
+    <string-array name="name_categories">
+        <item>Música</item>
+        <item>Negocios</item>
+        <item>Comida</item>
+        <item>Cultura</item>
+        <item>Artes</item>
+        <item>Entretenimiento</item>
+        <item>Deporte &amp; Fitness</item>
+        <item>Salud</item>
+        <item>Ciencia &amp; Tecnología</item>
+        <item>Viajes</item>
+        <item>Caridad &amp; sociales</item>
+        <item>"Religión &amp; Espiritualidad"</item>
+        <item>Familia &amp; Educación</item>
+        <item>Vacaciones</item>
+        <item>Política</item>
+        <item>Belleza</item>
+        <item>Hogar</item>
+        <item>Automolismo, Botes &amp; Aire</item>
+        <item>Hobbies</item>
+        <item>Otros</item>
+        <item>Escuela</item>
     </string-array>
 </resources>

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey;
 import com.example.eventbritetest.persistence.room.EventContract;
 
 @Entity
-public class Event {
+public class EventDetail {
 
     @NonNull
     @PrimaryKey
@@ -29,7 +29,7 @@ public class Event {
     @ColumnInfo(name = EventContract.EventsColumn.CATEGORY_ID)
     private String categoryId = "";
 
-    public Event() {
+    public EventDetail() {
     }
 
     public String getId() {

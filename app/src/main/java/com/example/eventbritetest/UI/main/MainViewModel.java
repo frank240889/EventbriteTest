@@ -51,9 +51,12 @@ public class MainViewModel extends BaseViewModel {
     public LiveData<List<UIEvent>> observeEvents() {
         LiveData<Resource<List<Event>>> resource =
                 mRepository.getEvents();
-        mLiveEvents = Transformations.map(resource, input -> {
-            mUiEvents = getUIEvents(input.data);
-            return mUiEvents;
+        mLiveEvents = Transformations.map(resource, new Function<Resource<List<Event>>, List<UIEvent>>() {
+            @Override
+            public List<UIEvent> apply(Resource<List<Event>> input) {
+                mUiEvents = getUIEvents(input.data);
+                return mUiEvents;
+            }
         });
 
         return mLiveEvents;
@@ -66,6 +69,17 @@ public class MainViewModel extends BaseViewModel {
             @Override
             public Boolean apply(LoaderState input) {
                 mLoadingMore = input.loading;
+                /*String message;
+                if(mUiEvents.size() == 1) {
+                    message = getApplication().getString(R.string.event_number_message);
+                }
+                else {
+                    message = getApplication().getString(R.string.events_number_message);
+                }
+                String title = String.format(message,
+                        mUiEvents.size(), currentSeekRangeRadius());
+
+                mLiveOnMessage.setValue(title);*/
                 return input.loading;
             }
         });
@@ -73,7 +87,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     @Override
-    protected LiveData<SnackBar> observeMessageState() {
+    protected LiveData<SnackBar> observeSnackbarMessage() {
         LiveData<ErrorState> error = mRepository.observeErrorState();
         mSnackbar = Transformations.map(error, input -> getSnackBar(input));
         return mSnackbar;
@@ -83,9 +97,14 @@ public class MainViewModel extends BaseViewModel {
         return mUiEvents.get(position);
     }
 
-    public void fetchEvents(Location location, boolean loadMore) {
+    public void fetchEvents(Location location) {
         if(!mLoadingMore)
-            mRepository.fetchEvents(location, loadMore);
+            mRepository.fetchEvents(location);
+    }
+
+    public void fetchMoreEvents() {
+        if(!mLoadingMore)
+            mRepository.fetchMoreEvents();
     }
 
     private List<UIEvent> getUIEvents(List<Event> events) {
