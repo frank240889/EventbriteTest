@@ -3,17 +3,15 @@ package com.example.eventbritetest.UI.eventdetail;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
-import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
+import com.example.eventbritetest.UI.SingleLiveEvent;
 import com.example.eventbritetest.model.network.eventdetail.EventDetail;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.ErrorState;
-import com.example.eventbritetest.utils.SnackBar;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -32,15 +30,14 @@ public class EventDetailViewModel extends BaseViewModel {
     private MutableLiveData<String> mLiveUrl = new MutableLiveData<>();
     private MutableLiveData<String> mLiveLogo = new MutableLiveData<>();
     private Call<EventDetail> mEventDetailCall;
-    private MutableLiveData<Boolean> booleanMutableLiveData = new MutableLiveData<>();
-    private MutableLiveData<ErrorState> errorStateMutableLiveData = new MutableLiveData<>();
-
+    private MutableLiveData<Boolean> mLiveLoading = new MutableLiveData<>();
     private EventbriteApiService mEventbriteApiService;
 
     @Inject
     public EventDetailViewModel(@NonNull Application application, EventbriteApiService eventbriteApiService) {
         super(application);
         mEventbriteApiService = eventbriteApiService;
+        mErrorState = new SingleLiveEvent<>();
     }
 
     public LiveData<String> observeTitle() {
@@ -74,7 +71,7 @@ public class EventDetailViewModel extends BaseViewModel {
 
     public void fetchEvent(String idEvent) {
         String values = "organizer,venue";
-        booleanMutableLiveData.setValue(true);
+        mLiveLoading.setValue(true);
         mEventDetailCall = mEventbriteApiService.fetchEventDetail(idEvent,values);
         mEventDetailCall.enqueue(new Callback<EventDetail>() {
             @Override
@@ -82,18 +79,18 @@ public class EventDetailViewModel extends BaseViewModel {
                 if(response.body() != null) {
                     EventDetail eventDetail = response.body();
                     processResponse(eventDetail);
-                    booleanMutableLiveData.setValue(false);
+                    mLiveLoading.setValue(false);
                 }
                 else {
-                    booleanMutableLiveData.setValue(false);
-                    errorStateMutableLiveData.setValue(ErrorState.create(ErrorState.Error.PARSING));
+                    mLiveLoading.setValue(false);
+                    mErrorState.setValue((ErrorState.create(ErrorState.Error.PARSING)));
                 }
             }
 
             @Override
             public void onFailure(@NotNull Call<EventDetail> call, Throwable t) {
-                booleanMutableLiveData.setValue(false);
-                errorStateMutableLiveData.setValue(ErrorState.create(ErrorState.Error.NETWORK));
+                mLiveLoading.setValue(false);
+                mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
             }
         });
     }
@@ -140,31 +137,12 @@ public class EventDetailViewModel extends BaseViewModel {
     }
 
     @Override
-    protected LiveData<Boolean> observeLoaderState() {
-        mLiveLoading = Transformations.map(booleanMutableLiveData, input -> input);
+    public LiveData<Boolean> observeLoaderState() {
         return mLiveLoading;
     }
 
     @Override
-    protected LiveData<SnackBar> observeSnackbarMessage() {
-        mSnackbar = Transformations.map(errorStateMutableLiveData, new Function<ErrorState, SnackBar>() {
-            @Override
-            public SnackBar apply(ErrorState input) {
-                return EventDetailViewModel.this.getSnackBar(input);
-            }
-        });
-        return mSnackbar;
-    }
-
-    @Override
-    protected SnackBar getSnackBar(ErrorState input) {
-        switch (input.error) {
-            case NETWORK:
-                return SnackBar.create(R.string.network_error, R.string.retry, SnackBar.Action.REQUEST_EVENT_DETAIL);
-            case PARSING:
-                return SnackBar.create(R.string.cannot_process_response, R.string.retry, SnackBar.Action.REQUEST_EVENT_DETAIL);
-            default:
-                return SnackBar.create(R.string.unknown_error, SnackBar.NO_RESOURCE_ID, SnackBar.Action.NONE);
-        }
+    public LiveData<ErrorState> observeErrorState() {
+        return mErrorState;
     }
 }

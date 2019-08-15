@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,9 +30,10 @@ import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseRoundedBottomSheetDialogFragment;
 import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.utils.ContextUtils;
+import com.example.eventbritetest.utils.ErrorState;
 import com.example.eventbritetest.utils.GlideApp;
-import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
+import com.example.eventbritetest.utils.SnackbarFactory;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
@@ -39,8 +41,6 @@ import com.google.android.material.snackbar.Snackbar;
 import javax.inject.Inject;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
-
-import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
 
 public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<EventDetailViewModel> {
 
@@ -83,7 +83,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel.observeLoaderState().observe(this, this::onLoading);
-        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
+        mViewModel.observeErrorState().observe(this, this::onError);
         mViewModel.observeTitle().observe(this, this::onTitleFetched);
         mViewModel.observeOrganizer().observe(this, this::onOrganizerFetched);
         mViewModel.observeLogo().observe(this, this::onLogoUrlFetched);
@@ -135,6 +135,8 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
     private void setColor(){
         mLoadingProgressBar.setIndeterminateTintList(ColorStateList.valueOf(mDominantColor));
         mSeparator.setBackgroundColor(mDominantColor);
+        mTextViewDate.getCompoundDrawablesRelative()[0].setColorFilter(mDominantColor, PorterDuff.Mode.SRC_IN);
+        mTextViewAddress.getCompoundDrawablesRelative()[0].setColorFilter(mDominantColor, PorterDuff.Mode.SRC_IN);
     }
 
     @Override
@@ -208,34 +210,20 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         //mTextViewUrl.setText(s);
     }
 
-    @Override
-    protected void onSnackbarMessage(SnackBar snackBar) {
-        if(snackBar.getAction() == NONE) {
-            RoundedSnackbar.make(mLoadingProgressBar, snackBar.getMessageResourceId(), Snackbar.LENGTH_SHORT).show();
-        }
-        else {
-            createSnackbarWithAction(snackBar);
-        }
-    }
-
-    @Override
-    protected void createSnackbarWithAction(SnackBar snackBar) {
-        Snackbar snackbar = RoundedSnackbar.make(mLoadingProgressBar, snackBar.getMessageResourceId(), Snackbar.LENGTH_INDEFINITE);
+    private void onError(ErrorState errorState) {
+        SnackBar snackBar = SnackBar.create(errorState);
+        Snackbar snackbar = SnackbarFactory.create(snackBar, mLoadingProgressBar);
         View.OnClickListener onClickListener = getOnClickListener(snackBar);
-        snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
-        snackbar.show();
+        if(onClickListener != null) {
+            snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
+        }
     }
 
-    @Override protected View.OnClickListener getOnClickListener(SnackBar snackBar) {
+    private View.OnClickListener getOnClickListener(SnackBar snackBar) {
 
         switch (snackBar.getAction()) {
             case REQUEST_EVENT_DETAIL:
-                return new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mViewModel.fetchEvent(getArguments().getString(EventbriteApiService.EVENT_ID));
-                    }
-                };
+                return v -> mViewModel.fetchEvent(getArguments().getString(EventbriteApiService.EVENT_ID));
         }
         return null;
     }

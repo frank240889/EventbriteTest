@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.eventbritetest.UI.SingleLiveEvent;
 import com.example.eventbritetest.interfaces.AsyncCallback;
 import com.example.eventbritetest.model.network.search.EventbriteEvent;
 import com.example.eventbritetest.model.persistence.Event;
@@ -51,7 +52,7 @@ public class EventRepository {
     private MutableLiveData<Status> mLiveStatus = new MutableLiveData<>();
 
     private MutableLiveData<LoaderState> mLoaderState = new MutableLiveData<>();
-    private MutableLiveData<ErrorState> mErrorState = new MutableLiveData<>();
+    private SingleLiveEvent<ErrorState> mErrorState = new SingleLiveEvent<>();
 
     private Location mCurrentLocation;
     private DistanceUnit mCurrentDistanceUnit;

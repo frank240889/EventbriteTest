@@ -6,7 +6,6 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
 import com.example.eventbritetest.R;
 import com.example.eventbritetest.UI.BaseViewModel;
@@ -15,7 +14,6 @@ import com.example.eventbritetest.network.EventbriteApiService;
 import com.example.eventbritetest.persistence.sharedpreferences.SharedPref;
 import com.example.eventbritetest.utils.Constants;
 import com.example.eventbritetest.utils.ErrorState;
-import com.example.eventbritetest.utils.SnackBar;
 
 import java.util.List;
 
@@ -35,7 +33,8 @@ public class SettingsViewModel extends BaseViewModel {
     private Location mNewLocation;
     private List<DistanceUnit.Unit> mUnits;
     private MutableLiveData<Boolean> booleanMutableLiveData = new MutableLiveData<>();
-    private MutableLiveData<ErrorState> errorStateMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<String> mLiveOnMessage = new MutableLiveData<>();
+    private MutableLiveData<Boolean> mLiveLoading = new MutableLiveData<>();
 
     @Inject
     public SettingsViewModel(@NonNull Application application, SharedPref sharedPref) {
@@ -54,14 +53,16 @@ public class SettingsViewModel extends BaseViewModel {
         return mLiveCurrentRange;
     }
 
-
-
     public LiveData<List<DistanceUnit.Unit>> observeUnitList() {
         return mLiveUnits;
     }
 
     public LiveData<Boolean> observeSettingChanges() {
         return mLiveHasAnyChange;
+    }
+
+    public LiveData<String> observeOnLiveMessage() {
+        return mLiveOnMessage;
     }
 
     public void setRange(String range) {
@@ -187,14 +188,13 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     @Override
-    protected LiveData<Boolean> observeLoaderState() {
-        mLiveLoading = Transformations.map(booleanMutableLiveData, input -> input);
+    public LiveData<Boolean> observeLoaderState() {
         return mLiveLoading;
     }
 
     @Override
-    protected LiveData<SnackBar> observeSnackbarMessage() {
-        mSnackbar = Transformations.map(errorStateMutableLiveData, input -> getSnackBar(input));
-        return mSnackbar;
+    public LiveData<ErrorState> observeErrorState() {
+        return mErrorState;
     }
+
 }

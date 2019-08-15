@@ -28,16 +28,14 @@ import com.example.eventbritetest.UI.BaseFragment;
 import com.example.eventbritetest.UI.eventdetail.EventDetailFragment;
 import com.example.eventbritetest.UI.help.HelpFragment;
 import com.example.eventbritetest.UI.settings.SettingsFragment;
+import com.example.eventbritetest.utils.ErrorState;
 import com.example.eventbritetest.utils.LocationLiveData;
 import com.example.eventbritetest.utils.Permission;
-import com.example.eventbritetest.utils.RoundedSnackbar;
 import com.example.eventbritetest.utils.SnackBar;
+import com.example.eventbritetest.utils.SnackbarFactory;
 import com.google.android.material.snackbar.Snackbar;
 
 import javax.inject.Inject;
-
-import static com.example.eventbritetest.utils.SnackBar.Action.NONE;
-import static com.example.eventbritetest.utils.SnackBar.Action.REQUEST_LOCATION_PERMISSION;
 
 public class MainFragment extends BaseFragment<MainViewModel> implements SettingsFragment.SettingsListener {
 
@@ -72,10 +70,20 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
         });
 
         mViewModel.observeLoaderState().observe(this, this::onLoading);
-        mViewModel.observeSnackbarMessage().observe(this, this::onSnackbarMessage);
+        mViewModel.observeErrorState().observe(this, this::onError);
         mViewModel.observeEvents().observe(this, mEventAdapter);
         setHasOptionsMenu(true);
         fetchOrRequestPermissions();
+    }
+
+    private void onError(ErrorState errorState) {
+        SnackBar snackBar = SnackBar.create(errorState);
+        Snackbar snackbar = SnackbarFactory.create(snackBar, mRecyclerView);
+        View.OnClickListener onClickListener = getOnClickListener(snackBar);
+        if(onClickListener != null) {
+            snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
+        }
+        snackbar.show();
     }
 
     @Override
@@ -203,44 +211,9 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             }
             else {
                 mSwipeRefreshLayout.setRefreshing(false);
-                onSnackbarMessage(SnackBar.create(R.string.location_error,R.string.retry, REQUEST_LOCATION_PERMISSION));
+                onError(ErrorState.create(ErrorState.Error.LOCATION));
             }
         }
-    }
-
-    @Override
-    protected void onSnackbarMessage(SnackBar snackBar) {
-        if(snackBar.getAction() == NONE) {
-            RoundedSnackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_SHORT).show();
-        }
-        else {
-            createSnackbarWithAction(snackBar);
-        }
-    }
-
-    @Override
-    protected void createSnackbarWithAction(SnackBar snackBar) {
-        Snackbar snackbar = RoundedSnackbar.make(mRecyclerView, snackBar.getMessageResourceId(), Snackbar.LENGTH_INDEFINITE);
-        View.OnClickListener onClickListener = getOnClickListener(snackBar);
-        snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
-        snackbar.show();
-    }
-
-    @Override
-    protected View.OnClickListener getOnClickListener(SnackBar snackBar) {
-
-        switch (snackBar.getAction()) {
-            case REQUEST_FETCH_EVENTS:
-                return v -> locationLiveData.getLocation();
-            case REQUEST_LOCATION_PERMISSION:
-                return v -> MainFragment.this.requestPermissions(
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        Permission.LOCATION.ordinal()
-                );
-            case REQUEST_MORE_EVENTS:
-                return v -> mViewModel.fetchMoreEvents();
-        }
-        return null;
     }
 
     @Override
@@ -260,5 +233,18 @@ public class MainFragment extends BaseFragment<MainViewModel> implements Setting
             mRecyclerView.scrollToPosition(0);
             locationLiveData.getLocation();
         }
+    }
+
+    private View.OnClickListener getOnClickListener(SnackBar snackBar) {
+        switch (snackBar.getAction()) {
+            case REQUEST_FETCH_EVENTS:
+                return v -> locationLiveData.getLocation();
+            case REQUEST_LOCATION:
+            case REQUEST_LOCATION_PERMISSION:
+                return v -> fetchOrRequestPermissions();
+            case REQUEST_MORE_EVENTS:
+                return v -> mViewModel.fetchMoreEvents();
+        }
+        return null;
     }
 }
