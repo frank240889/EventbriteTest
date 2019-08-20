@@ -1,6 +1,8 @@
 package com.example.eventbritetest.repository;
 
 import android.location.Location;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -64,12 +66,14 @@ public class EventRepository {
     private boolean mLoadingMore = false;
     private boolean mFirstRequestLocation;
     ContextUtils contextUtils;
+    private Handler mHandler;
 
     @Inject
     public EventRepository(EventbriteApiService apiService,
                            EventRoomDatabase eventRoomDatabase,
                            SharedPref sharedPref,
                            ContextUtils contextUtils) {
+        mHandler = new Handler(Looper.getMainLooper());
         mApiService = apiService;
         mEventRoomDatabase = eventRoomDatabase;
         mSharedPref = sharedPref;
@@ -175,7 +179,9 @@ public class EventRepository {
                         mMediatorLiveResource.removeSource(resource);
                         mLoaderState.setValue(LoaderState.done());
                         mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA));
-                        mLoadingMore = false;
+                        mHandler.postDelayed(() -> {
+                            mLoadingMore = false;
+                        }, 2000);
                     });
         }
     }
@@ -204,9 +210,11 @@ public class EventRepository {
                                     e -> {
                                         mMediatorLiveResource.setValue(Resource.ready(e));
                                         mMediatorLiveResource.removeSource(resource);
-                                        mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_PARSING));
                                         mLoaderState.setValue(LoaderState.done());
-                                        mLoadingMore = false;
+                                        mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_PARSING));
+                                        mHandler.postDelayed(() -> {
+                                            mLoadingMore = false;
+                                        }, 2000);
                                     });
                         }
                     }
@@ -221,7 +229,9 @@ public class EventRepository {
                                 mLoaderState.setValue(LoaderState.done());
                                 if(!call.isCanceled())
                                     mErrorState.setValue(ErrorState.create(ErrorState.Error.NO_MORE_DATA_NETWORK));
-                                mLoadingMore = false;
+                                mHandler.postDelayed(() -> {
+                                    mLoadingMore = false;
+                                }, 2000);
                             });
                 }
             };

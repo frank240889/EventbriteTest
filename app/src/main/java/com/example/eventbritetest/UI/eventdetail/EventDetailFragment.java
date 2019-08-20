@@ -161,7 +161,7 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
                 apply(new RequestOptions().
                         transform(
                                 new RoundedCornersTransformation(
-                                        (int) contextUtils.dpToPx(16),
+                                        (int) contextUtils.dpToPx(8),
                                         0,
                                         RoundedCornersTransformation.CornerType.ALL))).
                 addListener(new RequestListener<Bitmap>() {
@@ -217,12 +217,13 @@ public class EventDetailFragment extends BaseRoundedBottomSheetDialogFragment<Ev
         if(onClickListener != null) {
             snackbar.setAction(snackBar.getActionResourceId(), onClickListener);
         }
+        snackbar.show();
     }
 
     private View.OnClickListener getOnClickListener(SnackBar snackBar) {
 
         switch (snackBar.getAction()) {
-            case REQUEST_EVENT_DETAIL:
+            case REQUEST_FETCH_EVENTS:
                 return v -> mViewModel.fetchEvent(getArguments().getString(EventbriteApiService.EVENT_ID));
         }
         return null;

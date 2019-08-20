@@ -32,6 +32,7 @@ public class EventDetailViewModel extends BaseViewModel {
     private Call<EventDetail> mEventDetailCall;
     private MutableLiveData<Boolean> mLiveLoading = new MutableLiveData<>();
     private EventbriteApiService mEventbriteApiService;
+    private EventDetail mEventDetail;
 
     @Inject
     public EventDetailViewModel(@NonNull Application application, EventbriteApiService eventbriteApiService) {
@@ -70,29 +71,33 @@ public class EventDetailViewModel extends BaseViewModel {
 
 
     public void fetchEvent(String idEvent) {
-        String values = "organizer,venue";
-        mLiveLoading.setValue(true);
-        mEventDetailCall = mEventbriteApiService.fetchEventDetail(idEvent,values);
-        mEventDetailCall.enqueue(new Callback<EventDetail>() {
-            @Override
-            public void onResponse(@NotNull Call<EventDetail> call, Response<EventDetail> response) {
-                if(response.body() != null) {
-                    EventDetail eventDetail = response.body();
-                    processResponse(eventDetail);
-                    mLiveLoading.setValue(false);
+        if(mEventDetail == null && mEventDetailCall == null) {
+            String values = "organizer,venue";
+            mLiveLoading.setValue(true);
+            mEventDetailCall = mEventbriteApiService.fetchEventDetail(idEvent,values);
+            mEventDetailCall.enqueue(new Callback<EventDetail>() {
+                @Override
+                public void onResponse(@NotNull Call<EventDetail> call, Response<EventDetail> response) {
+                    if(response.body() != null) {
+                        mEventDetail = response.body();
+                        processResponse(mEventDetail);
+                        mLiveLoading.setValue(false);
+                    }
+                    else {
+                        mLiveLoading.setValue(false);
+                        mErrorState.setValue((ErrorState.create(ErrorState.Error.PARSING)));
+                    }
+                    mEventDetailCall = null;
                 }
-                else {
-                    mLiveLoading.setValue(false);
-                    mErrorState.setValue((ErrorState.create(ErrorState.Error.PARSING)));
-                }
-            }
 
-            @Override
-            public void onFailure(@NotNull Call<EventDetail> call, Throwable t) {
-                mLiveLoading.setValue(false);
-                mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
-            }
-        });
+                @Override
+                public void onFailure(@NotNull Call<EventDetail> call, Throwable t) {
+                    mLiveLoading.setValue(false);
+                    mErrorState.setValue(ErrorState.create(ErrorState.Error.NETWORK));
+                    mEventDetailCall = null;
+                }
+            });
+        }
     }
 
     @Override
